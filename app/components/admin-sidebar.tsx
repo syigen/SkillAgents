@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Library, Users, BarChart3, Settings, LogOut, Bot } from "lucide-react";
+import { LayoutGrid, Library, Users, BarChart3, Settings, LogOut, Bot, Activity } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ export function AdminSidebar() {
     const isActive = (path: string) => {
         if (path === '/templates' && pathname?.startsWith('/templates')) return true;
         if (path === '/agents' && pathname?.startsWith('/agents')) return true;
+        if (path === '/interviews' && pathname?.startsWith('/interviews')) return true;
         return pathname === path;
     };
 
@@ -32,6 +33,7 @@ export function AdminSidebar() {
                     <NavItem href="/" icon={<LayoutGrid size={18} />} label="Dashboard" active={isActive('/')} />
                     <NavItem href="/templates" icon={<Library size={18} />} label="Library" active={isActive('/templates')} />
                     <NavItem href="/agents" icon={<Bot size={18} />} label="Agents" active={isActive('/agents')} />
+                    <NavItem href="/interviews" icon={<Activity size={18} />} label="Interviews" active={isActive('/interviews')} />
                     <NavItem href="#" icon={<Users size={18} />} label="Team" />
                     <NavItem href="#" icon={<BarChart3 size={18} />} label="Reports" />
                 </nav>
