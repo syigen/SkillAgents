@@ -6,7 +6,12 @@ export default async function AgentsPage() {
     // Fetch agents from the database
     const agents = await prisma.agent.findMany({
         orderBy: { createdAt: 'desc' },
-        include: { owner: true } // Includes owner info if we want to display who invited them
+        include: {
+            owner: true,
+            skillClaims: {
+                where: { status: 'approved' }
+            }
+        }
     });
 
     return (

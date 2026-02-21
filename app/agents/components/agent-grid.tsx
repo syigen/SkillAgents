@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Bot, Terminal, CalendarDays, Key, Settings2 } from "lucide-react";
+import { Bot, Terminal, CalendarDays, Key, Settings2, BadgeCheck } from "lucide-react";
 
 export function AgentGrid({ initialAgents }: { initialAgents: any[] }) {
     const [agents, setAgents] = useState(initialAgents);
@@ -80,6 +80,22 @@ function AgentCard({ agent }: { agent: any }) {
                         <div className="text-sm text-slate-500 italic">No tools declared</div>
                     )}
                 </div>
+
+                {/* Verified Skills Section */}
+                {agent.skillClaims && agent.skillClaims.length > 0 && (
+                    <div className="mt-2">
+                        <div className="text-xs font-semibold text-emerald-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <BadgeCheck size={14} /> Verified Skills
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                            {agent.skillClaims.map((claim: any, i: number) => (
+                                <span key={i} className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20 shadow-sm flex items-center gap-1">
+                                    {claim.skillId}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Meta details */}
                 <div className="mt-auto grid grid-cols-2 gap-4 pt-4 border-t border-[#1f2937]/50">

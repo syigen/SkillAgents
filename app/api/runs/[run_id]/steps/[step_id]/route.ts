@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import z from "zod";
+import { randomUUID } from "crypto";
 
 const updateStepSchema = z.object({
     score: z.number().int().optional(),
     isHumanGraded: z.boolean().optional(),
     humanNote: z.string().optional(),
-    gradingHistory: z.array(z.any()).optional(),
     content: z.string().optional(),
+
+    // Multi-grading fields
+    newGrade: z.object({
+        score: z.number().int().min(0).max(100),
+        reasoning: z.string(),
+        type: z.enum(["Human", "AI"]),
+    }).optional(),
+    electGradeId: z.string().optional(),
 });
 
 export async function PATCH(
@@ -43,14 +51,75 @@ export async function PATCH(
             return NextResponse.json({ success: false, error: "Step not found for this run" }, { status: 404 });
         }
 
+        let currentHistory: any[] = Array.isArray(step.gradingHistory) ? step.gradingHistory : (
+            typeof step.gradingHistory === 'string' ? JSON.parse(step.gradingHistory) : []
+        );
+        let updatedScore = step.score;
+        let updatedHumanNote = step.humanNote;
+        let updatedIsHumanGraded = step.isHumanGraded;
+        let historyModified = false;
+
+        if (validatedData.newGrade) {
+            // Demote others
+            currentHistory = currentHistory.map(g => ({ ...g, isElected: false }));
+
+            // Generate ID
+            const newId = randomUUID();
+            const gradeItem = {
+                id: newId,
+                score: validatedData.newGrade.score,
+                reasoning: validatedData.newGrade.reasoning,
+                type: validatedData.newGrade.type,
+                givenTime: new Date().toISOString(),
+                electedTime: new Date().toISOString(),
+                isElected: true
+            };
+
+            // Append
+            currentHistory.push(gradeItem);
+
+            // Update scalar fields safely
+            updatedScore = gradeItem.score;
+            updatedHumanNote = gradeItem.reasoning;
+            updatedIsHumanGraded = gradeItem.type === "Human";
+            historyModified = true;
+        } else if (validatedData.electGradeId) {
+            // Find grade
+            const targetGrade = currentHistory.find(g => g.id === validatedData.electGradeId);
+            if (!targetGrade) {
+                return NextResponse.json({ success: false, error: "Grade ID not found in history" }, { status: 404 });
+            }
+
+            // Update election status
+            currentHistory = currentHistory.map(g => {
+                if (g.id === validatedData.electGradeId) {
+                    return { ...g, isElected: true, electedTime: new Date().toISOString() };
+                }
+                return { ...g, isElected: false };
+            });
+
+            // Update scalar fields safely
+            updatedScore = targetGrade.score;
+            updatedHumanNote = targetGrade.reasoning;
+            updatedIsHumanGraded = targetGrade.type === "Human";
+            historyModified = true;
+        }
+
+        // Keep backwards comp for direct scalar updates if no newGrade/electGradeId is specified
+        if (!validatedData.newGrade && !validatedData.electGradeId) {
+            if (validatedData.score !== undefined) updatedScore = validatedData.score;
+            if (validatedData.humanNote !== undefined) updatedHumanNote = validatedData.humanNote;
+            if (validatedData.isHumanGraded !== undefined) updatedIsHumanGraded = validatedData.isHumanGraded;
+        }
+
         // Apply updates
         const updatedStep = await prisma.runStep.update({
             where: { id: step_id },
             data: {
-                ...(validatedData.score !== undefined && { score: validatedData.score }),
-                ...(validatedData.isHumanGraded !== undefined && { isHumanGraded: validatedData.isHumanGraded }),
-                ...(validatedData.humanNote !== undefined && { humanNote: validatedData.humanNote }),
-                ...(validatedData.gradingHistory !== undefined && { gradingHistory: validatedData.gradingHistory as any }),
+                score: updatedScore,
+                isHumanGraded: updatedIsHumanGraded,
+                humanNote: updatedHumanNote,
+                ...(historyModified && { gradingHistory: currentHistory as any }),
                 ...(validatedData.content !== undefined && { content: validatedData.content }),
             }
         });
