@@ -3,6 +3,9 @@
 import { CheckCircle2, CircleDashed, Bot, Library, ChevronRight, Activity, Calendar, XCircle, Lock, MoreHorizontal, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { useAppSelector } from "../../../lib/store/hooks";
+import { RunLiveTracker } from "../../../lib/store/RunLiveTracker";
+
 
 type RunSummary = {
     id: string;
@@ -32,8 +35,12 @@ function getScoreColor(score: number | null) {
 }
 
 export function InterviewTable({ runs }: Props) {
+    const liveRuns = useAppSelector(state => state.runs.runs);
+    const runIds = runs.map(r => r.id);
+
     return (
         <div className="w-full h-full overflow-hidden flex flex-col bg-[#0d121c]">
+            <RunLiveTracker runIds={runIds} />
             <div className="flex-1 overflow-auto">
                 <table className="w-full border-collapse min-w-[800px]">
                     <thead className="sticky top-0 z-10 bg-[#0d121c]/95 backdrop-blur-sm border-b border-[#1f2937]">
@@ -54,7 +61,13 @@ export function InterviewTable({ runs }: Props) {
                                 </td>
                             </tr>
                         ) : (
-                            runs.map((run) => {
+                            runs.map((baseRun) => {
+                                const liveState = liveRuns[baseRun.id];
+                                const run = {
+                                    ...baseRun,
+                                    status: liveState?.status ?? baseRun.status,
+                                    score: liveState?.score ?? baseRun.score,
+                                };
                                 const statusCls = getStatusStyle(run.status);
                                 const scoreCls = getScoreColor(run.score);
 

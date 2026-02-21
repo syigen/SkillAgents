@@ -5,7 +5,11 @@ import { ArrowLeft, Clock, Activity, Bot, Library, CheckCircle2, CircleDashed, F
 import Link from "next/link";
 import { formatDistanceToNow, format } from "date-fns";
 import { IssueCertificateButton } from "../components/issue-certificate-button";
+import { FinishInterviewButton } from "../components/finish-interview-button";
 import { TranscriptTabs } from "../components/transcript-tabs";
+import { RunStatusActions } from "../components/run-status-actions";
+import { RunScoreBox } from "../components/run-score-box";
+
 
 export default async function InterviewDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -14,7 +18,11 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
         where: { id },
         include: {
             agent: true,
-            template: true,
+            template: {
+                include: {
+                    criteria: { orderBy: { createdAt: 'asc' } }
+                }
+            },
             steps: {
                 orderBy: { timestamp: 'asc' }
             }
@@ -40,18 +48,17 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                             <ArrowLeft size={16} /> Back to Interviews
                         </Link>
 
-                        <div className="flex items-center gap-3">
-                            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-bold tracking-wide uppercase ${run.status === 'completed' || run.status === 'pass'
-                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                : run.status === 'fail'
-                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                }`}>
-                                {run.status === 'completed' || run.status === 'pass' ? <CheckCircle2 size={14} /> : run.status === 'fail' ? <Activity size={14} /> : <CircleDashed size={14} />}
-                                {run.status}
-                            </div>
-                            <IssueCertificateButton runId={run.id} isLocked={run.isLocked} status={run.status} />
-                        </div>
+                        <RunStatusActions
+                            runId={run.id}
+                            initialStatus={run.status}
+                            isLocked={run.isLocked}
+                            steps={run.steps.map(s => ({
+                                ...s,
+                                timestamp: s.timestamp.toISOString(),
+                            })) as any}
+                            criteria={(run.template?.criteria as any) ?? []}
+                            skills={(run.template?.skills as any) ?? []}
+                        />
                     </div>
 
                     <div className="mb-2">
@@ -83,40 +90,12 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                         </div>
 
                         {/* Score */}
-                        <div className="bg-[#151b27] border border-[#1f2937] rounded-lg p-4 flex flex-col gap-1">
-                            <div className="flex items-center gap-2 text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
-                                <Activity size={14} className="text-indigo-400" /> Current Score
-                            </div>
-                            {(run.evaluation as any) ? (
-                                <>
-                                    <div className="flex items-end gap-1.5">
-                                        <span className={`text-3xl font-black leading-none ${(run.evaluation as any).overall >= (run.evaluation as any).pass_threshold ? 'text-emerald-400' : 'text-yellow-400'}`}>
-                                            {(run.evaluation as any).overall}
-                                        </span>
-                                        <span className="text-slate-500 font-bold mb-0.5 text-sm">/ 100</span>
-                                    </div>
-                                    <div className="mt-1 space-y-0.5">
-                                        {Object.entries((run.evaluation as any).per_skill || {}).map(([skill, score]) => (
-                                            <div key={skill} className="flex justify-between items-center text-xs">
-                                                <span className="text-slate-500">{skill}</span>
-                                                <span className="text-slate-300 font-mono">{score as number}/100</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : run.score !== null ? (
-                                <div className="flex items-end gap-1.5">
-                                    <span className="text-3xl font-black text-yellow-400 leading-none">{run.score}</span>
-                                    <span className="text-slate-500 font-bold mb-0.5 text-sm">/ 100</span>
-                                </div>
-                            ) : (
-                                <span className="text-slate-500 italic text-sm mt-1">Pending evaluation...</span>
-                            )}
-                            <div className="flex items-center gap-1.5 mt-auto pt-2 text-slate-500 text-xs">
-                                <Clock size={12} />
-                                {formatDistanceToNow(new Date(run.timestamp), { addSuffix: true })}
-                            </div>
-                        </div>
+                        <RunScoreBox
+                            runId={run.id}
+                            initialScore={run.score}
+                            evaluation={run.evaluation}
+                            timestamp={run.timestamp.toISOString()}
+                        />
                     </div>
                 </div>
 
@@ -146,6 +125,7 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                             timestamp: s.timestamp.toISOString(),
                             gradingHistory: s.gradingHistory,
                         }))}
+                        criteria={(run.template?.criteria as any) ?? []}
                     />
                 </div>
             </div>
