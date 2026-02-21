@@ -16,6 +16,7 @@ export function RunStatusActions({
 }: any) {
     const liveState = useAppSelector(state => state.runs.runs[runId]);
     const status = liveState?.status ?? initialStatus;
+    const locked = liveState?.isLocked ?? isLocked;
 
     return (
         <div className="flex items-center gap-3">
@@ -29,7 +30,7 @@ export function RunStatusActions({
                 {status === 'completed' || status === 'pass' ? <CheckCircle2 size={14} /> : status === 'fail' ? <Activity size={14} /> : <CircleDashed size={14} className="animate-spin-slow" />}
                 {status}
             </div>
-            {(status === 'running' || status === 'in_progress') && (
+            {(status === 'running' || status === 'in_progress') && !locked && (
                 <FinishInterviewButton
                     runId={runId}
                     steps={steps}
@@ -37,7 +38,7 @@ export function RunStatusActions({
                     skills={skills}
                 />
             )}
-            <IssueCertificateButton runId={runId} isLocked={isLocked} status={status} />
+            <IssueCertificateButton runId={runId} isLocked={locked} status={status} />
         </div>
     );
 }

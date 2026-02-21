@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { updateRunStatus } from "@/lib/store/runsSlice";
 
 import {
     AlertDialog,
@@ -47,6 +49,7 @@ export function FinishInterviewButton({
     onSuccess?: () => void;
 }) {
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +105,16 @@ export function FinishInterviewButton({
                 const data = await res.json();
                 throw new Error(data.error || "Failed to finalize evaluation");
             }
+
+            const data = await res.json();
+
+            // Update local Redux state immediately
+            dispatch(updateRunStatus({
+                id: runId,
+                status: data.status,
+                score: data.score,
+                isLocked: data.isLocked
+            }));
 
             // Successfully evaluated
             if (onSuccess) onSuccess();

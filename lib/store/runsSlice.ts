@@ -4,6 +4,7 @@ export interface RunState {
     id: string;
     status: string;
     score: number | null;
+    isLocked?: boolean;
 }
 
 interface RunsSliceState {
@@ -24,10 +25,13 @@ export const runsSlice = createSlice({
             });
         },
         updateRunStatus: (state, action: PayloadAction<RunState>) => {
-            const { id, status, score } = action.payload;
+            const { id, status, score, isLocked } = action.payload;
             if (state.runs[id]) {
                 state.runs[id].status = status;
                 state.runs[id].score = score;
+                if (isLocked !== undefined) {
+                    state.runs[id].isLocked = isLocked;
+                }
             } else {
                 state.runs[id] = action.payload;
             }

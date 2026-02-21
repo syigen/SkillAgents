@@ -38,8 +38,8 @@ export async function PATCH(
             return NextResponse.json({ success: false, error: "Run not found" }, { status: 404 });
         }
 
-        if (run.isLocked) {
-            return NextResponse.json({ success: false, error: "Run is locked because a certificate has been issued" }, { status: 403 });
+        if (run.isLocked || (run.status !== 'running' && run.status !== 'in_progress')) {
+            return NextResponse.json({ success: false, error: "Run is locked or already completed" }, { status: 403 });
         }
 
         // Check if the step exists and belongs to the run

@@ -110,6 +110,7 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                     <TranscriptTabs
                         runId={run.id}
                         isLocked={run.isLocked}
+                        initialStatus={run.status}
                         systemSteps={run.steps.filter(s => s.role === 'system').map(s => ({
                             ...s,
                             timestamp: s.timestamp.toISOString(),

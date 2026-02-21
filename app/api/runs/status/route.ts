@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
                 id: true,
                 status: true,
                 score: true,
+                isLocked: true,
             }
         });
 

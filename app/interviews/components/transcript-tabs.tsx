@@ -4,6 +4,8 @@ import { useState } from "react";
 import { User, Bot, Terminal, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { HumanGradingOverride } from "./human-grading-override";
+import { useAppSelector } from "@/lib/store/hooks";
+
 
 type StepData = {
     id: string;
@@ -19,6 +21,7 @@ type StepData = {
 type Props = {
     runId: string;
     isLocked: boolean;
+    initialStatus: string;
     systemSteps: StepData[];
     interviewerSteps: StepData[];
     agentSteps: StepData[];
@@ -32,8 +35,13 @@ function getScoreStyle(score: number | null | undefined, isHumanGraded?: boolean
     return { pill: "bg-[#2c0b0e] border-red-500/30 text-red-400", text: "text-red-400" };
 }
 
-export function TranscriptTabs({ runId, isLocked, systemSteps, interviewerSteps, agentSteps, criteria = [] }: Props) {
+export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, interviewerSteps, agentSteps, criteria = [] }: Props) {
     const [activeIndex, setActiveIndex] = useState<number>(0);
+    const liveState = useAppSelector(state => state.runs.runs[runId]);
+
+    const status = liveState?.status ?? initialStatus;
+    const isTerminalStatus = status !== 'running' && status !== 'in_progress';
+    const locked = (liveState?.isLocked ?? isLocked) || isTerminalStatus;
 
     const activeQuestion = interviewerSteps[activeIndex];
     const activeAnswer = agentSteps[activeIndex];
@@ -204,7 +212,7 @@ export function TranscriptTabs({ runId, isLocked, systemSteps, interviewerSteps,
                                             stepId={activeAnswer.id}
                                             currentScore={activeAnswer.score}
                                             currentNote={activeAnswer.humanNote}
-                                            isLocked={isLocked}
+                                            isLocked={locked}
                                             isHumanGraded={activeAnswer.isHumanGraded}
                                             gradingHistory={activeAnswer.gradingHistory}
                                         />

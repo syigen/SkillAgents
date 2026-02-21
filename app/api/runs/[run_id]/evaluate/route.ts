@@ -38,7 +38,8 @@ export async function POST(
                 score: evaluationPayload.overall,
                 evaluation: evaluationPayload as any,
                 evaluatedAt: new Date(),
-                status: newStatus
+                status: newStatus,
+                isLocked: true, // Lock the interview panel after finishing
             }
         });
 
@@ -130,7 +131,8 @@ export async function POST(
             id: updatedRun.id,
             score: updatedRun.score,
             status: updatedRun.status,
-            evaluation: updatedRun.evaluation
+            evaluation: updatedRun.evaluation,
+            isLocked: updatedRun.isLocked,
         };
 
         return NextResponse.json(responseData, { status: 200 });
