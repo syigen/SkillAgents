@@ -14,8 +14,11 @@ datasource db {
 }
 
 model User {
-  id        String     @id @db.Uuid
-  templates Template[]
+  id           String        @id @db.Uuid
+  templates    Template[]
+  agentInvites AgentInvite[]
+  agents       Agent[]
+  runs         Run[]
 
   @@map("users")
 }
@@ -31,8 +34,10 @@ model Template {
   lastUpdated DateTime @default(now()) @updatedAt @map("last_updated") @db.Timestamptz()
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
-  owner    User                @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
-  criteria TemplateCriterion[]
+  owner        User                @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  criteria     TemplateCriterion[]
+  agentInvites AgentInvite[]
+  runs         Run[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -51,4 +56,85 @@ model TemplateCriterion {
 
   @@index([templateId])
   @@map("template_criteria")
+}
+
+model AgentInvite {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId String    @map("owner_user_id") @db.Uuid
+  templateId  String    @map("template_id") @db.Uuid
+  tokenHash   String    @unique @map("token_hash")
+  status      String    @default("active")
+  maxUses     Int?      @map("max_uses")
+  uses        Int       @default(0)
+  expiresAt   DateTime? @map("expires_at") @db.Timestamptz()
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  owner    User     @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  runs     Run[]
+
+  @@index([ownerUserId])
+  @@index([templateId])
+  @@index([status])
+  @@map("agent_invites")
+}
+
+model Agent {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId           String   @unique @map("agent_id")
+  ownerUserId       String?  @map("owner_user_id") @db.Uuid
+  clientRequestId   String   @map("client_request_id")
+  name              String
+  version           String   @default("1.0")
+  fingerprint       String   @default("")
+  fingerprintMethod String   @default("none") @map("fingerprint_method")
+  toolAccess        Json     @default("[]") @map("tool_access")
+  skillMdHash       String   @default("") @map("skill_md_hash")
+  workspaceFiles    String?  @map("workspace_files")
+  apiKeyHash        String   @map("api_key_hash")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  owner User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  runs  Run[]
+
+  @@unique([ownerUserId, clientRequestId], map: "uq_agent_owner_clientreq")
+  @@map("agents")
+}
+
+model Run {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId    String   @map("owner_user_id") @db.Uuid
+  agentFkId      String   @map("agent_fk_id") @db.Uuid
+  templateId     String   @map("template_id") @db.Uuid
+  inviteId       String?  @map("invite_id") @db.Uuid
+  status         String   @default("running")
+  score          Int?
+  questions      Json     @default("[]")
+  questionSource String   @default("static") @map("question_source")
+  templateName   String?  @map("template_name")
+  timestamp      DateTime @default(now()) @db.Timestamptz()
+
+  owner    User         @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  agent    Agent        @relation(fields: [agentFkId], references: [id], onDelete: Cascade)
+  template Template     @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  invite   AgentInvite? @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+  steps    RunStep[]
+
+  @@index([ownerUserId])
+  @@index([agentFkId])
+  @@index([templateId])
+  @@map("runs")
+}
+
+model RunStep {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId     String   @map("run_id") @db.Uuid
+  role      String
+  content   String
+  timestamp DateTime @default(now()) @db.Timestamptz()
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("run_steps")
 }
