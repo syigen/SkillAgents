@@ -138,11 +138,15 @@ model Run {
 }
 
 model RunStep {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  runId     String   @map("run_id") @db.Uuid
-  role      String
-  content   String
-  timestamp DateTime @default(now()) @db.Timestamptz()
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId          String   @map("run_id") @db.Uuid
+  role           String
+  content        String
+  score          Int?
+  isHumanGraded  Boolean  @default(false) @map("is_human_graded")
+  humanNote      String?  @map("human_note")
+  gradingHistory Json     @default("[]") @map("grading_history")
+  timestamp      DateTime @default(now()) @db.Timestamptz()
 
   run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
 
