@@ -24,7 +24,16 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                 }
             },
             steps: {
-                orderBy: { timestamp: 'asc' }
+                orderBy: { timestamp: 'asc' },
+                include: {
+                    gradingHistory: { orderBy: { givenAt: 'asc' } }
+                }
+            },
+            evaluation: {
+                include: {
+                    skillScores: true,
+                    perQuestion: { include: { skillScores: true } }
+                }
             }
         },
     });
@@ -93,7 +102,13 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                         <RunScoreBox
                             runId={run.id}
                             initialScore={run.score}
-                            evaluation={run.evaluation}
+                            evaluation={run.evaluation ? {
+                                overall: run.evaluation.overall,
+                                pass_threshold: run.evaluation.passThreshold,
+                                per_skill: Object.fromEntries(
+                                    run.evaluation.skillScores.map(s => [s.skill, s.score])
+                                ),
+                            } : null}
                             timestamp={run.timestamp.toISOString()}
                         />
                     </div>
@@ -114,17 +129,41 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                         systemSteps={run.steps.filter(s => s.role === 'system').map(s => ({
                             ...s,
                             timestamp: s.timestamp.toISOString(),
-                            gradingHistory: s.gradingHistory,
+                            gradingHistory: s.gradingHistory.map(g => ({
+                                id: g.id,
+                                score: g.score,
+                                reasoning: g.reasoning,
+                                type: g.type,
+                                isElected: g.isElected,
+                                givenAt: g.givenAt.toISOString(),
+                                electedAt: g.electedAt.toISOString(),
+                            })),
                         }))}
                         interviewerSteps={run.steps.filter(s => s.role === 'interviewer').map(s => ({
                             ...s,
                             timestamp: s.timestamp.toISOString(),
-                            gradingHistory: s.gradingHistory,
+                            gradingHistory: s.gradingHistory.map(g => ({
+                                id: g.id,
+                                score: g.score,
+                                reasoning: g.reasoning,
+                                type: g.type,
+                                isElected: g.isElected,
+                                givenAt: g.givenAt.toISOString(),
+                                electedAt: g.electedAt.toISOString(),
+                            })),
                         }))}
                         agentSteps={run.steps.filter(s => s.role === 'agent').map(s => ({
                             ...s,
                             timestamp: s.timestamp.toISOString(),
-                            gradingHistory: s.gradingHistory,
+                            gradingHistory: s.gradingHistory.map(g => ({
+                                id: g.id,
+                                score: g.score,
+                                reasoning: g.reasoning,
+                                type: g.type,
+                                isElected: g.isElected,
+                                givenAt: g.givenAt.toISOString(),
+                                electedAt: g.electedAt.toISOString(),
+                            })),
                         }))}
                         criteria={(run.template?.criteria as any) ?? []}
                     />

@@ -113,7 +113,6 @@ model Run {
   inviteId       String?   @map("invite_id") @db.Uuid
   status         String    @default("running")
   score          Int?
-  evaluation     Json?
   evaluatedAt    DateTime? @map("evaluated_at") @db.Timestamptz()
   isLocked       Boolean   @default(false) @map("is_locked")
   questions      Json      @default("[]")
@@ -130,6 +129,7 @@ model Run {
   questionScores RunQuestionScore[]
   skillClaims    AgentSkillClaim[]
   certificate    Certificate?
+  evaluation     RunEvaluation?
 
   @@index([ownerUserId])
   @@index([agentFkId])
@@ -138,20 +138,96 @@ model Run {
 }
 
 model RunStep {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  runId          String   @map("run_id") @db.Uuid
-  role           String
-  content        String
-  score          Int?
-  isHumanGraded  Boolean  @default(false) @map("is_human_graded")
-  humanNote      String?  @map("human_note")
-  gradingHistory Json     @default("[]") @map("grading_history")
-  timestamp      DateTime @default(now()) @db.Timestamptz()
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId         String   @map("run_id") @db.Uuid
+  role          String
+  content       String
+  score         Int?
+  isHumanGraded Boolean  @default(false) @map("is_human_graded")
+  humanNote     String?  @map("human_note")
+  timestamp     DateTime @default(now()) @db.Timestamptz()
 
-  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+  run            Run            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  gradingHistory RunStepGrade[]
 
   @@index([runId])
   @@map("run_steps")
+}
+
+model RunStepGrade {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stepId    String   @map("step_id") @db.Uuid
+  score     Int
+  reasoning String
+  type      String
+  isElected Boolean  @default(false) @map("is_elected")
+  givenAt   DateTime @default(now()) @map("given_at") @db.Timestamptz()
+  electedAt DateTime @default(now()) @map("elected_at") @db.Timestamptz()
+
+  step RunStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@index([stepId])
+  @@map("run_step_grades")
+}
+
+model RunEvaluation {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId          String   @unique @map("run_id") @db.Uuid
+  overall        Int
+  passThreshold  Int      @map("pass_threshold")
+  skillThreshold Int      @map("skill_threshold")
+  model          String?
+  version        String?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  run         Run                        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  skillScores RunEvaluationSkillScore[]
+  perQuestion RunEvaluationPerQuestion[]
+
+  @@index([runId])
+  @@map("run_evaluations")
+}
+
+model RunEvaluationSkillScore {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evaluationId String @map("evaluation_id") @db.Uuid
+  skill        String
+  score        Int
+
+  evaluation RunEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, skill])
+  @@index([evaluationId])
+  @@map("run_evaluation_skill_scores")
+}
+
+model RunEvaluationPerQuestion {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evaluationId  String  @map("evaluation_id") @db.Uuid
+  questionIndex Int     @map("question_index")
+  score         Int
+  maxScore      Int     @map("max_score")
+  feedback      String?
+
+  evaluation  RunEvaluation                     @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  skillScores RunEvaluationQuestionSkillScore[]
+
+  @@unique([evaluationId, questionIndex])
+  @@index([evaluationId])
+  @@map("run_evaluation_per_question")
+}
+
+model RunEvaluationQuestionSkillScore {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  questionId String @map("question_id") @db.Uuid
+  skill      String
+  score      Int
+
+  question RunEvaluationPerQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, skill])
+  @@index([questionId])
+  @@map("run_evaluation_question_skill_scores")
 }
 
 model RunQuestionScore {

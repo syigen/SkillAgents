@@ -31,16 +31,83 @@ export async function POST(
         const runPass = evaluationPayload.overall >= evaluationPayload.pass_threshold;
         const newStatus = runPass ? 'pass' : 'fail';
 
-        // Update run with score, evaluation payload, and status
+        // Update run with score and status (no longer stores evaluation as JSON)
         const updatedRun = await prisma.run.update({
             where: { id: run_id },
             data: {
                 score: evaluationPayload.overall,
-                evaluation: evaluationPayload as any,
                 evaluatedAt: new Date(),
                 status: newStatus,
-                isLocked: true, // Lock the interview panel after finishing
+                isLocked: true,
             }
+        });
+
+        // Upsert RunEvaluation (one-to-one)
+        const upsertedEvaluation = await prisma.runEvaluation.upsert({
+            where: { runId: run_id },
+            create: {
+                runId: run_id,
+                overall: evaluationPayload.overall,
+                passThreshold: evaluationPayload.pass_threshold,
+                skillThreshold: evaluationPayload.skill_threshold,
+                model: evaluationPayload.model ?? null,
+                version: evaluationPayload.version ?? null,
+                skillScores: {
+                    create: Object.entries(evaluationPayload.per_skill).map(([skill, score]) => ({
+                        skill,
+                        score: Math.round(score),
+                    })),
+                },
+                perQuestion: {
+                    create: evaluationPayload.per_question.map((q) => ({
+                        questionIndex: q.question_index,
+                        score: q.score,
+                        maxScore: q.max_score,
+                        feedback: q.feedback ?? null,
+                        skillScores: {
+                            create: Object.entries(q.skills ?? {}).map(([skill, score]) => ({
+                                skill,
+                                score: Math.round(score as number),
+                            })),
+                        },
+                    })),
+                },
+            },
+            update: {
+                overall: evaluationPayload.overall,
+                passThreshold: evaluationPayload.pass_threshold,
+                skillThreshold: evaluationPayload.skill_threshold,
+                model: evaluationPayload.model ?? null,
+                version: evaluationPayload.version ?? null,
+                // Replace skill scores
+                skillScores: {
+                    deleteMany: {},
+                    create: Object.entries(evaluationPayload.per_skill).map(([skill, score]) => ({
+                        skill,
+                        score: Math.round(score),
+                    })),
+                },
+                // Replace per-question rows
+                perQuestion: {
+                    deleteMany: {},
+                    create: evaluationPayload.per_question.map((q) => ({
+                        questionIndex: q.question_index,
+                        score: q.score,
+                        maxScore: q.max_score,
+                        feedback: q.feedback ?? null,
+                        skillScores: {
+                            create: Object.entries(q.skills ?? {}).map(([skill, score]) => ({
+                                skill,
+                                score: Math.round(score as number),
+                            })),
+                        },
+                    })),
+                },
+            },
+            include: {
+                skillScores: true,
+                perQuestion: { include: { skillScores: true } },
+            },
         });
 
         // Determine who graded
@@ -55,7 +122,6 @@ export async function POST(
 
         for (const skillName of templateSkills) {
             const skillScore = evaluationPayload.per_skill[skillName] ?? 0;
-            // Only approve if they met the skill threshold AND passed the overall interview
             const approved = runPass && (skillScore >= evaluationPayload.skill_threshold);
             const status = approved ? 'approved' : 'rejected';
 
@@ -127,15 +193,30 @@ export async function POST(
             }
         }
 
-        const responseData = {
+        // Build evaluation response shape (mirrors old JSON shape for client compat)
+        const evaluationResponse = {
+            overall: upsertedEvaluation.overall,
+            pass_threshold: upsertedEvaluation.passThreshold,
+            skill_threshold: upsertedEvaluation.skillThreshold,
+            model: upsertedEvaluation.model,
+            version: upsertedEvaluation.version,
+            per_skill: Object.fromEntries(upsertedEvaluation.skillScores.map(s => [s.skill, s.score])),
+            per_question: upsertedEvaluation.perQuestion.map(q => ({
+                question_index: q.questionIndex,
+                score: q.score,
+                max_score: q.maxScore,
+                feedback: q.feedback,
+                skills: Object.fromEntries(q.skillScores.map(s => [s.skill, s.score])),
+            })),
+        };
+
+        return NextResponse.json({
             id: updatedRun.id,
             score: updatedRun.score,
             status: updatedRun.status,
-            evaluation: updatedRun.evaluation,
+            evaluation: evaluationResponse,
             isLocked: updatedRun.isLocked,
-        };
-
-        return NextResponse.json(responseData, { status: 200 });
+        }, { status: 200 });
 
     } catch (error: any) {
         if (error.name === "ZodError") {

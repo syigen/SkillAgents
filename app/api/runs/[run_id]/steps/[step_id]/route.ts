@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import z from "zod";
-import { randomUUID } from "crypto";
 
 const updateStepSchema = z.object({
     score: z.number().int().optional(),
@@ -42,91 +41,106 @@ export async function PATCH(
             return NextResponse.json({ success: false, error: "Run is locked or already completed" }, { status: 403 });
         }
 
-        // Check if the step exists and belongs to the run
+        // Fetch step with its grading history
         const step = await prisma.runStep.findUnique({
-            where: { id: step_id }
+            where: { id: step_id },
+            include: { gradingHistory: { orderBy: { givenAt: 'asc' } } }
         });
 
         if (!step || step.runId !== run_id) {
             return NextResponse.json({ success: false, error: "Step not found for this run" }, { status: 404 });
         }
 
-        let currentHistory: any[] = Array.isArray(step.gradingHistory) ? step.gradingHistory : (
-            typeof step.gradingHistory === 'string' ? JSON.parse(step.gradingHistory) : []
-        );
         let updatedScore = step.score;
         let updatedHumanNote = step.humanNote;
         let updatedIsHumanGraded = step.isHumanGraded;
-        let historyModified = false;
 
         if (validatedData.newGrade) {
-            // Demote others
-            currentHistory = currentHistory.map(g => ({ ...g, isElected: false }));
+            const now = new Date();
 
-            // Generate ID
-            const newId = randomUUID();
-            const gradeItem = {
-                id: newId,
-                score: validatedData.newGrade.score,
-                reasoning: validatedData.newGrade.reasoning,
-                type: validatedData.newGrade.type,
-                givenTime: new Date().toISOString(),
-                electedTime: new Date().toISOString(),
-                isElected: true
-            };
+            // Demote all existing grades
+            await prisma.runStepGrade.updateMany({
+                where: { stepId: step_id },
+                data: { isElected: false }
+            });
 
-            // Append
-            currentHistory.push(gradeItem);
+            // Create new elected grade
+            const newGrade = await prisma.runStepGrade.create({
+                data: {
+                    stepId: step_id,
+                    score: validatedData.newGrade.score,
+                    reasoning: validatedData.newGrade.reasoning,
+                    type: validatedData.newGrade.type,
+                    isElected: true,
+                    givenAt: now,
+                    electedAt: now,
+                }
+            });
 
-            // Update scalar fields safely
-            updatedScore = gradeItem.score;
-            updatedHumanNote = gradeItem.reasoning;
-            updatedIsHumanGraded = gradeItem.type === "Human";
-            historyModified = true;
+            updatedScore = newGrade.score;
+            updatedHumanNote = newGrade.reasoning;
+            updatedIsHumanGraded = newGrade.type === "Human";
+
         } else if (validatedData.electGradeId) {
-            // Find grade
-            const targetGrade = currentHistory.find(g => g.id === validatedData.electGradeId);
+            const targetGrade = step.gradingHistory.find(g => g.id === validatedData.electGradeId);
             if (!targetGrade) {
                 return NextResponse.json({ success: false, error: "Grade ID not found in history" }, { status: 404 });
             }
 
-            // Update election status
-            currentHistory = currentHistory.map(g => {
-                if (g.id === validatedData.electGradeId) {
-                    return { ...g, isElected: true, electedTime: new Date().toISOString() };
-                }
-                return { ...g, isElected: false };
+            // Demote all, then elect chosen
+            await prisma.runStepGrade.updateMany({
+                where: { stepId: step_id },
+                data: { isElected: false }
             });
 
-            // Update scalar fields safely
+            await prisma.runStepGrade.update({
+                where: { id: validatedData.electGradeId },
+                data: { isElected: true, electedAt: new Date() }
+            });
+
             updatedScore = targetGrade.score;
             updatedHumanNote = targetGrade.reasoning;
             updatedIsHumanGraded = targetGrade.type === "Human";
-            historyModified = true;
         }
 
-        // Keep backwards comp for direct scalar updates if no newGrade/electGradeId is specified
+        // Keep backwards compatibility for direct scalar updates
         if (!validatedData.newGrade && !validatedData.electGradeId) {
             if (validatedData.score !== undefined) updatedScore = validatedData.score;
             if (validatedData.humanNote !== undefined) updatedHumanNote = validatedData.humanNote;
             if (validatedData.isHumanGraded !== undefined) updatedIsHumanGraded = validatedData.isHumanGraded;
         }
 
-        // Apply updates
+        // Apply scalar updates to the step
         const updatedStep = await prisma.runStep.update({
             where: { id: step_id },
             data: {
                 score: updatedScore,
                 isHumanGraded: updatedIsHumanGraded,
                 humanNote: updatedHumanNote,
-                ...(historyModified && { gradingHistory: currentHistory as any }),
                 ...(validatedData.content !== undefined && { content: validatedData.content }),
+            },
+            include: {
+                gradingHistory: { orderBy: { givenAt: 'asc' } }
             }
         });
 
+        // Serialize gradingHistory to match the old JSON shape for client compatibility
+        const stepWithHistory = {
+            ...updatedStep,
+            gradingHistory: updatedStep.gradingHistory.map(g => ({
+                id: g.id,
+                score: g.score,
+                reasoning: g.reasoning,
+                type: g.type,
+                isElected: g.isElected,
+                givenAt: g.givenAt.toISOString(),
+                electedAt: g.electedAt.toISOString(),
+            })),
+        };
+
         return NextResponse.json({
             success: true,
-            step: updatedStep
+            step: stepWithHistory
         }, { status: 200 });
 
     } catch (error: any) {

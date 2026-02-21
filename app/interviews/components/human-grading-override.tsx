@@ -32,9 +32,7 @@ export function HumanGradingOverride({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const parsedHistory = Array.isArray(gradingHistory) ? gradingHistory : (
-        typeof gradingHistory === 'string' ? JSON.parse(gradingHistory) : []
-    );
+    const parsedHistory = Array.isArray(gradingHistory) ? gradingHistory : [];
 
     const handleSave = async () => {
         setLoading(true);
@@ -205,9 +203,9 @@ export function HumanGradingOverride({
                             </div>
 
                             <div className="text-[11px] text-slate-500 mb-3 flex flex-wrap gap-x-4 gap-y-1 bg-[#0f131d]/50 p-2 rounded-md font-mono">
-                                <span>Given: {new Date(item.givenTime).toLocaleString()}</span>
+                                <span>Given: {new Date(item.givenAt).toLocaleString()}</span>
                                 {item.isElected && (
-                                    <span>Elected: {new Date(item.electedTime).toLocaleString()}</span>
+                                    <span>Elected: {new Date(item.electedAt).toLocaleString()}</span>
                                 )}
                             </div>
 

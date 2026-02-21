@@ -12,7 +12,7 @@ export async function POST(
         // Fetch run with relations
         const run = await prisma.run.findUnique({
             where: { id: run_id },
-            include: { agent: true, template: true, certificate: true }
+            include: { agent: true, template: true, certificate: true, evaluation: { include: { skillScores: true } } }
         });
 
         if (!run) {
@@ -46,7 +46,12 @@ export async function POST(
             agent_name: run.agent.name,
             template_name: run.templateName || run.template.name,
             score: run.score,
-            evaluation: run.evaluation,
+            evaluation: run.evaluation ? {
+                overall: run.evaluation.overall,
+                pass_threshold: run.evaluation.passThreshold,
+                skill_threshold: run.evaluation.skillThreshold,
+                per_skill: Object.fromEntries(run.evaluation.skillScores.map(s => [s.skill, s.score])),
+            } : null,
             timestamp: new Date().toISOString()
         };
 
