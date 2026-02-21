@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { AdminSidebar } from "../components/admin-sidebar";
+import { AdminSidebar } from "../../components/admin-sidebar";
 import { ArrowLeft, Clock, BarChart, FileEdit } from "lucide-react";
 import Link from "next/link";
+import { InviteAgentButton } from "../components/invite-agent-button";
 
 export default async function TemplateDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     // 1. Fetch template by ID
@@ -38,8 +39,8 @@ export default async function TemplateDetailsPage({ params }: { params: Promise<
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5 bg-[#1b253c]/50 border border-[#2a364d] rounded-full px-2.5 py-1">
                                 <span className={`w-1.5 h-1.5 rounded-full ${template.status === "public" ? "bg-emerald-500" :
-                                        template.status === "private" ? "bg-amber-500" :
-                                            "bg-slate-400"
+                                    template.status === "private" ? "bg-amber-500" :
+                                        "bg-slate-400"
                                     }`} />
                                 <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-300">
                                     {template.status}
@@ -67,15 +68,19 @@ export default async function TemplateDetailsPage({ params }: { params: Promise<
                             </div>
                         </div>
 
-                        {/* 4. Conditional Edit Button */}
-                        {isOwner && (
-                            <Link
-                                href={`/templates/${template.id}/edit`}
-                                className="bg-[#1b253c] hover:bg-[#2a364d] border border-[#2a364d] text-white px-5 py-2.5 rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm tracking-wide"
-                            >
-                                <FileEdit size={16} /> Edit Template
-                            </Link>
-                        )}
+                        {/* 4. Action Buttons */}
+                        <div className="flex items-center gap-3">
+                            <InviteAgentButton templateId={template.id} />
+
+                            {isOwner && (
+                                <Link
+                                    href={`/templates/${template.id}/edit`}
+                                    className="bg-[#1b253c] hover:bg-[#2a364d] border border-[#2a364d] text-white px-5 py-2.5 rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm tracking-wide"
+                                >
+                                    <FileEdit size={16} /> Edit
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
 

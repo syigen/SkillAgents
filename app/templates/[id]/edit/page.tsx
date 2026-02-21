@@ -1,6 +1,6 @@
-import { AdminSidebar } from "../../components/admin-sidebar";
 import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { AdminSidebar } from "../../../components/admin-sidebar";
 import { TemplateForm } from "../../components/form/template-form";
 
 export default async function EditTemplatePage({ params }: { params: Promise<{ id: string }> }) {

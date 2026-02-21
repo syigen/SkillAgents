@@ -1,5 +1,5 @@
 import { TemplateForm } from "../components/form/template-form";
-import { AdminSidebar } from "../components/admin-sidebar";
+import { AdminSidebar } from "../../components/admin-sidebar";
 
 export default function CreateTemplatePage() {
     return (

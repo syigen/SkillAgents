@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { AdminSidebar } from "./components/admin-sidebar";
+import { AdminSidebar } from "../components/admin-sidebar";
 import { TemplateGrid } from "./components/template-grid";
 
 export default async function TemplatesPage() {
