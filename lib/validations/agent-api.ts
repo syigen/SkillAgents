@@ -41,7 +41,7 @@ export const registerResponseSchema = z.object({
     agent_id: z.string(),
     api_key: z.string(),
     verification_url: z.string(),
-    registration_receipt: z.record(z.any()),
+    registration_receipt: z.record(z.string(), z.any()),
 });
 
 export type RegisterResponse = z.infer<typeof registerResponseSchema>;
@@ -76,3 +76,52 @@ export const submitAnswersResponseSchema = z.object({
 });
 
 export type SubmitAnswersResponse = z.infer<typeof submitAnswersResponseSchema>;
+
+// E) Evaluation Payload
+export const evaluationPerQuestionSchema = z.object({
+    question_index: z.number().int().min(0),
+    score: z.number().min(0),
+    max_score: z.number().min(1),
+    skills: z.record(z.string(), z.number()).default({}),
+    feedback: z.string().optional(),
+});
+
+export type EvaluationPerQuestion = z.infer<typeof evaluationPerQuestionSchema>;
+
+export const evaluationPayloadSchema = z.object({
+    overall: z.number().min(0).max(100),
+    pass_threshold: z.number().min(0).max(100),
+    per_skill: z.record(z.string(), z.number()),
+    skill_threshold: z.number().min(0).max(100),
+    per_question: z.array(evaluationPerQuestionSchema).default([]),
+    model: z.string().optional(),
+    version: z.string().optional(),
+});
+
+export type EvaluationPayload = z.infer<typeof evaluationPayloadSchema>;
+
+// F) Skill Claim Evidence Payload
+export const evidencePayloadSchema = z.object({
+    run_id: z.string().uuid(),
+    template_id: z.string().uuid(),
+    template_name: z.string(),
+    overall: z.number(),
+    per_skill: z.record(z.string(), z.number()),
+    threshold: z.number(),
+    evaluated_at: z.string(),
+});
+
+export type EvidencePayload = z.infer<typeof evidencePayloadSchema>;
+
+// G) Certificate Snapshot Payload
+export const certificateSnapshotSchema = z.object({
+    run_id: z.string().uuid(),
+    agent_id: z.string(),
+    agent_name: z.string(),
+    template_id: z.string().uuid(),
+    template_name: z.string(),
+    score: z.number(),
+    issued_at: z.string(),
+});
+
+export type CertificateSnapshot = z.infer<typeof certificateSnapshotSchema>;

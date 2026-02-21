@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id           String        @id @db.Uuid
-  templates    Template[]
-  agentInvites AgentInvite[]
-  agents       Agent[]
-  runs         Run[]
+  id                 String            @id @db.Uuid
+  templates          Template[]
+  agentInvites       AgentInvite[]
+  agents             Agent[]
+  runs               Run[]
+  skillClaims        AgentSkillClaim[]
+  issuedCertificates Certificate[]
 
   @@map("users")
 }
@@ -94,31 +96,40 @@ model Agent {
   apiKeyHash        String   @map("api_key_hash")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
-  owner User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
-  runs  Run[]
+  owner        User?             @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  runs         Run[]
+  skillClaims  AgentSkillClaim[]
+  certificates Certificate[]
 
   @@unique([ownerUserId, clientRequestId], map: "uq_agent_owner_clientreq")
   @@map("agents")
 }
 
 model Run {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ownerUserId    String   @map("owner_user_id") @db.Uuid
-  agentFkId      String   @map("agent_fk_id") @db.Uuid
-  templateId     String   @map("template_id") @db.Uuid
-  inviteId       String?  @map("invite_id") @db.Uuid
-  status         String   @default("running")
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId    String    @map("owner_user_id") @db.Uuid
+  agentFkId      String    @map("agent_fk_id") @db.Uuid
+  templateId     String    @map("template_id") @db.Uuid
+  inviteId       String?   @map("invite_id") @db.Uuid
+  status         String    @default("running")
   score          Int?
-  questions      Json     @default("[]")
-  questionSource String   @default("static") @map("question_source")
-  templateName   String?  @map("template_name")
-  timestamp      DateTime @default(now()) @db.Timestamptz()
+  evaluation     Json?
+  evaluatedAt    DateTime? @map("evaluated_at") @db.Timestamptz()
+  isLocked       Boolean   @default(false) @map("is_locked")
+  questions      Json      @default("[]")
+  questionSource String    @default("static") @map("question_source")
+  templateName   String?   @map("template_name")
+  timestamp      DateTime  @default(now()) @db.Timestamptz()
 
   owner    User         @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   agent    Agent        @relation(fields: [agentFkId], references: [id], onDelete: Cascade)
   template Template     @relation(fields: [templateId], references: [id], onDelete: Restrict)
   invite   AgentInvite? @relation(fields: [inviteId], references: [id], onDelete: SetNull)
-  steps    RunStep[]
+
+  steps          RunStep[]
+  questionScores RunQuestionScore[]
+  skillClaims    AgentSkillClaim[]
+  certificate    Certificate?
 
   @@index([ownerUserId])
   @@index([agentFkId])
@@ -137,4 +148,84 @@ model RunStep {
 
   @@index([runId])
   @@map("run_steps")
+}
+
+model RunQuestionScore {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId         String   @map("run_id") @db.Uuid
+  questionIndex Int      @map("question_index")
+  score         Int
+  maxScore      Int      @map("max_score")
+  perSkill      Json     @default("{}") @map("per_skill")
+  feedback      String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, questionIndex])
+  @@index([runId])
+  @@map("run_question_scores")
+}
+
+model AgentSkillClaim {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentFkId        String   @map("agent_fk_id") @db.Uuid
+  ownerUserId      String   @map("owner_user_id") @db.Uuid
+  skillId          String   @map("skill_id")
+  proficiencyClaim String   @default("verified") @map("proficiency_claim")
+  runId            String   @map("run_id") @db.Uuid
+  evidence         Json     @default("{}")
+  status           String
+  decidedBy        String   @default("ai") @map("decided_by")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  agent     Agent           @relation(fields: [agentFkId], references: [id], onDelete: Cascade)
+  owner     User            @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  run       Run             @relation(fields: [runId], references: [id], onDelete: Cascade)
+  decisions ClaimDecision[]
+
+  @@unique([agentFkId, ownerUserId, skillId])
+  @@index([agentFkId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@map("agent_skill_claims")
+}
+
+model ClaimDecision {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  claimId    String   @map("claim_id") @db.Uuid
+  source     String
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  reasoning  String?
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  claim AgentSkillClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@map("claim_decisions")
+}
+
+model Certificate {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId        String   @unique @map("run_id") @db.Uuid
+  agentFkId    String   @map("agent_fk_id") @db.Uuid
+  agentName    String   @map("agent_name")
+  templateName String?  @map("template_name")
+  score        Int
+  status       String   @default("active")
+  issuedAt     DateTime @default(now()) @map("issued_at") @db.Timestamptz()
+  issuedById   String?  @map("issued_by") @db.Uuid
+  dataHash     String   @map("data_hash")
+  snapshot     Json?
+
+  run      Run   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agent    Agent @relation(fields: [agentFkId], references: [id], onDelete: Cascade)
+  issuedBy User? @relation(fields: [issuedById], references: [id], onDelete: SetNull)
+
+  @@index([agentFkId])
+  @@index([status])
+  @@map("certificates")
 }
