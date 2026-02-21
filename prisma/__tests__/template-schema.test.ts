@@ -32,7 +32,6 @@ describe('Template and TemplateCriterion Schema Tests', () => {
             data: {
                 ownerUserId: userId,
                 name: 'Test Template',
-                type: 'test_type',
                 skills: ['skill1', 'skill2'],
                 difficulty: 'medium',
             },
@@ -40,8 +39,7 @@ describe('Template and TemplateCriterion Schema Tests', () => {
 
         expect(template.id).toBeDefined();
         expect(template.name).toBe('Test Template');
-        expect(template.type).toBe('test_type');
-        expect(template.status).toBe('private'); // Default value test
+        expect(template.status).toBe('draft'); // Default value test
     });
 
     it('should create a template with criteria using nested writes', async () => {
@@ -49,7 +47,6 @@ describe('Template and TemplateCriterion Schema Tests', () => {
             data: {
                 ownerUserId: userId,
                 name: 'Template With Criteria',
-                type: 'evaluation',
                 skills: ['react'],
                 difficulty: 'hard',
                 status: 'public',
@@ -85,7 +82,6 @@ describe('Template and TemplateCriterion Schema Tests', () => {
             data: {
                 ownerUserId: userId,
                 name: 'Template To Delete',
-                type: 'evaluation',
                 skills: [],
                 difficulty: 'easy',
                 criteria: {

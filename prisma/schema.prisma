@@ -25,10 +25,9 @@ model Template {
   ownerUserId String   @map("owner_user_id") @db.Uuid
   name        String
   description String?
-  type        String
   skills      Json     @default("[]")
   difficulty  String
-  status      String   @default("private")
+  status      String   @default("draft")
   lastUpdated DateTime @default(now()) @updatedAt @map("last_updated") @db.Timestamptz()
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
