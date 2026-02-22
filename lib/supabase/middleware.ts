@@ -41,6 +41,8 @@ export async function updateSession(request: NextRequest) {
     const isPublicPath =
         pathname === '/' ||
         pathname.startsWith('/login') ||
+        pathname.startsWith('/register') ||
+        pathname.startsWith('/forgot-password') ||
         pathname.startsWith('/api')
 
     // Authenticated user on home page → redirect to dashboard

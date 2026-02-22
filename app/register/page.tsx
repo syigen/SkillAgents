@@ -1,8 +1,8 @@
-import { login } from './actions'
+import { signup } from '../login/actions'
 import Link from 'next/link'
-import { ArrowRight, Mail, Lock, ArrowLeft } from 'lucide-react'
+import { ArrowRight, Mail, Lock, ArrowLeft, User } from 'lucide-react'
 
-export default async function LoginPage({
+export default async function RegisterPage({
     searchParams,
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -24,14 +24,14 @@ export default async function LoginPage({
 
                 <div>
                     <h2 className="text-2xl font-bold text-white leading-snug mb-3">
-                        Evaluate your AI agents
+                        Start evaluating
                         <br />
                         <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                            with confidence.
+                            in minutes.
                         </span>
                     </h2>
                     <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-                        Create interview templates, run automated evaluations, and generate skill-based certificates for your AI agents.
+                        Create your account to build interview templates, register AI agents, and run automated evaluations.
                     </p>
                 </div>
 
@@ -62,9 +62,9 @@ export default async function LoginPage({
                         Back to home
                     </Link>
 
-                    <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
+                    <h1 className="text-2xl font-bold text-white mb-1">Create an account</h1>
                     <p className="text-sm text-slate-400 mb-8">
-                        Sign in to your account to continue
+                        Get started with DevStudio for free
                     </p>
 
                     {message && (
@@ -98,46 +98,39 @@ export default async function LoginPage({
                         </div>
 
                         <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                                <label className="text-xs font-medium text-slate-300 uppercase tracking-wider" htmlFor="password">
-                                    Password
-                                </label>
-                                <Link
-                                    href="/forgot-password"
-                                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-                                >
-                                    Forgot password?
-                                </Link>
-                            </div>
+                            <label className="text-xs font-medium text-slate-300 uppercase tracking-wider" htmlFor="password">
+                                Password
+                            </label>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
-                                    placeholder="••••••••"
+                                    placeholder="Min. 6 characters"
                                     required
+                                    minLength={6}
                                     className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#141a2a] border border-[#1f2937] text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all"
                                 />
                             </div>
                         </div>
 
                         <button
-                            formAction={login}
+                            formAction={signup}
                             className="w-full h-11 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
                         >
-                            Sign in
+                            Create account
                             <ArrowRight size={16} />
                         </button>
                     </form>
 
                     <p className="text-center text-sm text-slate-500 mt-8">
-                        Don&apos;t have an account?{' '}
+                        Already have an account?{' '}
                         <Link
-                            href="/register"
+                            href="/login"
                             className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
                         >
-                            Create one
+                            Sign in
                         </Link>
                     </p>
                 </div>
