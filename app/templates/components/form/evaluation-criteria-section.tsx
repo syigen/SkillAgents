@@ -82,7 +82,6 @@ export function EvaluationCriteriaSection() {
                     onSaved={() => { }}
                 />
             )}
-
             <div className="flex items-center justify-between mb-2">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-white mb-2">

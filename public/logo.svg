@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <clipPath id="base-cut">
+      <rect x="0" y="0" width="200" height="165" />
+    </clipPath>
+  </defs>
+
+  <rect x="15" y="15" width="170" height="170" fill="none" stroke="#1A202C" stroke-width="8" />
+
+  <g clip-path="url(#base-cut)">
+    
+    <polygon points="30,165 80,35 110,35 125,75 80,120 65,165" fill="#1A202C" />
+
+    <g stroke="#1A202C" stroke-width="9" fill="none" stroke-linejoin="miter" stroke-linecap="butt">
+      
+      <line x1="118" y1="68" x2="135" y2="51" />
+
+      <path d="M 75 120 L 110 120 L 131 175" />
+      <line x1="110" y1="120" x2="145" y2="85" />
+
+      <path d="M 70 140 L 140 140 L 153 175" />
+      <line x1="140" y1="140" x2="165" y2="115" />
+
+    </g>
+
+    <g fill="#1A202C">
+      <circle cx="135" cy="51" r="7.5" />
+      <circle cx="145" cy="85" r="7.5" />
+      <circle cx="165" cy="115" r="7.5" />
+    </g>
+
+  </g>
+</svg>

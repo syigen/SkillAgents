@@ -15,10 +15,8 @@ export default async function ForgotPasswordPage({
             <div className="hidden lg:flex lg:w-[480px] xl:w-[560px] flex-col justify-between p-10 border-r border-[#1f2937]/60 bg-gradient-to-b from-[#0f131d] to-[#111827]">
                 <div>
                     <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                            <div className="w-4 h-4 bg-[#0f131d] rounded-full" />
-                        </div>
-                        <span className="text-white font-bold text-lg tracking-wide">DevStudio</span>
+                        <img src="/logo-white.svg" alt="SkillAgents" className="w-8 h-8" />
+                        <span className="text-white font-bold text-lg tracking-wide">SkillAgents</span>
                     </Link>
                 </div>
 
@@ -36,7 +34,7 @@ export default async function ForgotPasswordPage({
                 </div>
 
                 <p className="text-slate-600 text-xs">
-                    &copy; {new Date().getFullYear()} DevStudio
+                    &copy; {new Date().getFullYear()} SkillAgents
                 </p>
             </div>
 
@@ -49,7 +47,7 @@ export default async function ForgotPasswordPage({
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-[#0f131d] rounded-full" />
                             </div>
-                            <span className="text-white font-bold text-lg tracking-wide">DevStudio</span>
+                            <span className="text-white font-bold text-lg tracking-wide">SkillAgents</span>
                         </Link>
                     </div>
 
@@ -69,8 +67,8 @@ export default async function ForgotPasswordPage({
 
                     {message && (
                         <div className={`mb-6 px-4 py-3 rounded-lg border text-sm ${(message as string).toLowerCase().includes('check')
-                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                : 'bg-red-500/10 border-red-500/20 text-red-400'
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                            : 'bg-red-500/10 border-red-500/20 text-red-400'
                             }`}>
                             {message as string}
                         </div>

@@ -14,11 +14,9 @@ export default function HomePage() {
       {/* Nav */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-[#1f2937]/60">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <div className="w-4 h-4 bg-[#0f131d] rounded-full" />
-          </div>
+          <img src="/logo-white.svg" alt="SkillAgents" className="w-8 h-8" />
           <span className="text-white font-bold text-lg tracking-wide">
-            DevStudio
+            SkillAgents
           </span>
         </div>
         <Link
@@ -91,7 +89,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="px-8 py-6 border-t border-[#1f2937]/60 text-center">
         <p className="text-slate-500 text-xs">
-          &copy; {new Date().getFullYear()} DevStudio. Built for
+          &copy; {new Date().getFullYear()} SkillAgents. Built for
           evaluating AI agents.
         </p>
       </footer>
