@@ -42,7 +42,8 @@ export async function POST(req: Request) {
         const qIdx = questionIndex ?? 0;
 
         const question = interviewerSteps[qIdx];
-        const answer = agentSteps[qIdx];
+        let answer = agentSteps.find(s => s.content.trim().startsWith(`[Question Index: ${qIdx}]`));
+        if (!answer) answer = agentSteps[qIdx];
 
         if (!answer) {
             return NextResponse.json({ error: "No agent response found for this question" }, { status: 400 });
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
                 questionIndex: qIdx,
                 prompt: question?.content ?? "",
                 expected: criterion?.expected ?? undefined,
-                agentAnswer: answer.content,
+                agentAnswer: answer.content.replace(/^\[Question Index: \d+\]\s*/i, ''),
             },
             apiKey,
             model

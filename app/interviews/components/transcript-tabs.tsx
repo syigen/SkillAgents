@@ -45,7 +45,7 @@ export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, in
     const locked = (liveState?.isLocked ?? isLocked) || isTerminalStatus;
 
     const activeQuestion = interviewerSteps[activeIndex];
-    const activeAnswer = agentSteps[activeIndex];
+    const activeAnswer = agentSteps.find((s) => s.content.trim().startsWith(`[Question Index: ${activeIndex}]`)) || agentSteps[activeIndex];
     const activeCriterion = criteria[activeIndex];
 
     return (
@@ -72,7 +72,7 @@ export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, in
                     {interviewerSteps.length === 0 ? (
                         <div className="px-3 py-6 text-center text-slate-600 text-xs">No questions</div>
                     ) : interviewerSteps.map((q, i) => {
-                        const ans = agentSteps[i];
+                        const ans = agentSteps.find(s => s.content.trim().startsWith(`[Question Index: ${i}]`)) || agentSteps[i];
                         const style = getScoreStyle(ans?.score, ans?.isHumanGraded);
                         const isActive = activeIndex === i;
 
@@ -198,7 +198,7 @@ export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, in
                                         <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Agent Response</div>
                                         <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl rounded-tl-sm p-4 text-sm text-slate-200 leading-relaxed shadow-sm">
                                             <div className="prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-pre:bg-[#0f131d] prose-pre:border prose-pre:border-[#2a364d]">
-                                                <ReactMarkdown>{activeAnswer.content}</ReactMarkdown>
+                                                <ReactMarkdown>{activeAnswer.content.replace(/^\[Question Index: \d+\]\s*/i, '')}</ReactMarkdown>
                                             </div>
                                         </div>
                                     </div>
@@ -209,12 +209,14 @@ export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, in
                                     <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-[#1f2937]" />
                                     <div className="relative z-10 flex items-center gap-3">
                                         <AiGradeButton
+                                            key={`ai-${activeAnswer.id}`}
                                             runId={runId}
                                             stepId={activeAnswer.id}
                                             questionIndex={activeIndex}
                                             isLocked={locked}
                                         />
                                         <HumanGradingOverride
+                                            key={`human-${activeAnswer.id}`}
                                             runId={runId}
                                             stepId={activeAnswer.id}
                                             currentScore={activeAnswer.score}
