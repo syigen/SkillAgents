@@ -21,8 +21,22 @@ model User {
   runs               Run[]
   skillClaims        AgentSkillClaim[]
   issuedCertificates Certificate[]
+  settings           UserSettings?     @relation(fields: [userSettingsId], references: [id])
+  userSettingsId     String?           @db.Uuid
 
   @@map("users")
+}
+
+model UserSettings {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @unique @map("user_id") @db.Uuid
+  googleAiKeyEnc String?  @map("google_ai_key_enc")
+  googleAiKeyIv  String?  @map("google_ai_key_iv")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  users          User[]
+
+  @@map("user_settings")
 }
 
 model Template {

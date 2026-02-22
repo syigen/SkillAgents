@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import {
     FormControl,
@@ -21,16 +22,75 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { MultipleSelector } from "@/components/ui/multiple-selector";
 import { TemplateFormValues } from "@/lib/validations/template";
+import { AiGenerateButton } from "@/components/ui/ai-generate-button";
+import { AiKeySetupModal } from "@/components/ai/ai-key-setup-modal";
+import { useAiKey } from "@/lib/ai/use-ai-key";
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard", "Expert"] as const;
 
 export function GeneralInfoSidebar({ isEditing }: { isEditing?: boolean }) {
     const { control, setValue, watch, formState } = useFormContext<TemplateFormValues>();
+    const [descLoading, setDescLoading] = useState(false);
+    const [descError, setDescError] = useState<string | null>(null);
+    const [showKeyModal, setShowKeyModal] = useState(false);
+
+    const { hasKey, loading: keyLoading, setSessionKey, saveToDb, getAuthHeaders } = useAiKey();
 
     const currentDifficulty = watch("difficulty");
 
+    async function runGenerateDescription() {
+        const name = watch("name");
+        const skills = watch("skills");
+        const difficulty = watch("difficulty");
+
+        if (!name) {
+            setDescError("Enter a template name first.");
+            return;
+        }
+
+        setDescLoading(true);
+        setDescError(null);
+
+        try {
+            const res = await fetch("/api/ai/generate-description", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+                body: JSON.stringify({ name, skills, difficulty }),
+            });
+            const data = await res.json();
+
+            if (res.status === 401 && data.error === "NO_AI_KEY") {
+                setShowKeyModal(true);
+                return;
+            }
+
+            if (!res.ok) throw new Error(data.error ?? "AI generation failed");
+            setValue("description", data.description, { shouldDirty: true });
+        } catch (err: any) {
+            setDescError(err.message ?? "Something went wrong");
+        } finally {
+            setDescLoading(false);
+        }
+    }
+
+    function handleGenerateDescription() {
+        if (!hasKey && !keyLoading) {
+            setShowKeyModal(true);
+        } else {
+            runGenerateDescription();
+        }
+    }
+
     return (
         <div className="flex flex-col gap-6 pt-8 pb-10 px-6">
+            {showKeyModal && (
+                <AiKeySetupModal
+                    onClose={() => setShowKeyModal(false)}
+                    onSessionKey={(k) => { setSessionKey(k); setShowKeyModal(false); runGenerateDescription(); }}
+                    onDbKey={async (k) => { await saveToDb(k); setShowKeyModal(false); runGenerateDescription(); }}
+                    onSaved={() => { }}
+                />
+            )}
             <div className="mb-2">
                 {/* Internal Breadcrumb matching screen */}
                 <div className="mb-4 text-xs font-semibold tracking-wide text-slate-500 flex items-center gap-2">
@@ -70,7 +130,15 @@ export function GeneralInfoSidebar({ isEditing }: { isEditing?: boolean }) {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-sm font-semibold text-slate-300">Description</FormLabel>
+                            <div className="flex items-center justify-between mb-1">
+                                <FormLabel className="text-sm font-semibold text-slate-300">Description</FormLabel>
+                                <AiGenerateButton
+                                    variant="inline"
+                                    onClick={handleGenerateDescription}
+                                    loading={descLoading}
+                                    label="Generate"
+                                />
+                            </div>
                             <FormControl>
                                 <Textarea
                                     placeholder="Describe the purpose and scope of this evaluation..."
@@ -78,6 +146,9 @@ export function GeneralInfoSidebar({ isEditing }: { isEditing?: boolean }) {
                                     {...field}
                                 />
                             </FormControl>
+                            {descError && (
+                                <p className="text-xs text-red-400 mt-1">{descError}</p>
+                            )}
                             <FormMessage />
                         </FormItem>
                     )}
