@@ -4,6 +4,7 @@ import { useState } from "react";
 import { User, Bot, Terminal, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { HumanGradingOverride } from "./human-grading-override";
+import { AiGradeButton } from "./ai-review-button";
 import { useAppSelector } from "@/lib/store/hooks";
 
 
@@ -204,9 +205,15 @@ export function TranscriptTabs({ runId, isLocked, initialStatus, systemSteps, in
                                 </div>
 
                                 {/* Grade row */}
-                                <div className="flex justify-center py-1 relative">
+                                <div className="flex justify-center items-center gap-3 py-1 relative">
                                     <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-[#1f2937]" />
-                                    <div className="relative z-10">
+                                    <div className="relative z-10 flex items-center gap-3">
+                                        <AiGradeButton
+                                            runId={runId}
+                                            stepId={activeAnswer.id}
+                                            questionIndex={activeIndex}
+                                            isLocked={locked}
+                                        />
                                         <HumanGradingOverride
                                             runId={runId}
                                             stepId={activeAnswer.id}

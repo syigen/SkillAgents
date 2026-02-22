@@ -84,3 +84,64 @@ export function buildGenerateDescriptionPrompt(input: GenerateDescriptionInput):
 
     return parts.join("\n");
 }
+
+export interface QuestionReviewInput {
+    templateName: string;
+    templateDescription?: string;
+    skills: string[];
+    difficulty?: string;
+    questionIndex: number;
+    prompt: string;
+    expected?: string;
+    agentAnswer: string;
+}
+
+/**
+ * Builds the prompt for AI-powered single-question review.
+ * Gemini must return a JSON object with score and reasoning.
+ */
+export function buildQuestionReviewPrompt(input: QuestionReviewInput): string {
+    const { templateName, templateDescription, skills, difficulty, questionIndex, prompt, expected, agentAnswer } = input;
+
+    const parts: string[] = [
+        `You are an expert technical interviewer evaluating a single interview answer.`,
+        `Your job is to carefully score the answer and provide detailed reasoning.`,
+        ``,
+        `## Interview Context`,
+        `Template: "${templateName}"`,
+    ];
+
+    if (templateDescription) parts.push(`Description: ${templateDescription}`);
+    if (skills.length > 0) parts.push(`Skills assessed: ${skills.join(", ")}`);
+    if (difficulty) parts.push(`Difficulty: ${difficulty}`);
+
+    parts.push(
+        ``,
+        `## Question ${questionIndex + 1}`,
+        `**Prompt:** ${prompt}`,
+    );
+    if (expected) parts.push(`**Expected answer:** ${expected}`);
+    parts.push(
+        ``,
+        `## Agent's Answer`,
+        agentAnswer,
+        ``,
+        `## Instructions`,
+        `Evaluate the agent's answer against the expected outcome (if provided) and the question context.`,
+        ``,
+        `Return ONLY a valid JSON object. No markdown, no explanation, no code fences:`,
+        `{`,
+        `  "score": 75,`,
+        `  "reasoning": "Detailed multi-sentence evaluation of the answer quality, what was good, what was missing, and suggestions for improvement."`,
+        `}`,
+        ``,
+        `Rules:`,
+        `- "score" must be 0-100.`,
+        `- "reasoning" should be 2-5 sentences, specific and actionable.`,
+        `- Be fair but rigorous. A perfect answer gets 90-100, good 70-89, partial 40-69, poor 0-39.`,
+        `- Consider technical accuracy, completeness, clarity, and relevance to the question.`,
+    );
+
+    return parts.join("\n");
+}
+
