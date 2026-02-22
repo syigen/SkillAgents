@@ -11,6 +11,7 @@ export function AdminSidebar() {
         if (path === '/templates' && pathname?.startsWith('/templates')) return true;
         if (path === '/agents' && pathname?.startsWith('/agents')) return true;
         if (path === '/interviews' && pathname?.startsWith('/interviews')) return true;
+        if (path === '/dashboard' && pathname === '/dashboard') return true;
         return pathname === path;
     };
 
@@ -30,7 +31,7 @@ export function AdminSidebar() {
 
                 {/* Main Navigation */}
                 <nav className="flex flex-col gap-1 px-3">
-                    <NavItem href="/" icon={<LayoutGrid size={18} />} label="Dashboard" active={isActive('/')} />
+                    <NavItem href="/dashboard" icon={<LayoutGrid size={18} />} label="Dashboard" active={isActive('/dashboard')} />
                     <NavItem href="/templates" icon={<Library size={18} />} label="Library" active={isActive('/templates')} />
                     <NavItem href="/agents" icon={<Bot size={18} />} label="Agents" active={isActive('/agents')} />
                     <NavItem href="/interviews" icon={<Activity size={18} />} label="Interviews" active={isActive('/interviews')} />

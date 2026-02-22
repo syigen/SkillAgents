@@ -35,24 +35,27 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Protect routes if user is not logged in and not on /login or /auth pages
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login')
-    ) {
-        // no user, potentially redirect to login page
-        // For now we don't strictly protect the entire app, but you can add it here if needed.
-        // e.g., if you have a protected '/dashboard', you'd check `request.nextUrl.pathname.startsWith('/dashboard')`
+    const pathname = request.nextUrl.pathname
+
+    // Public paths that don't require authentication
+    const isPublicPath =
+        pathname === '/' ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/api')
+
+    // Authenticated user on home page → redirect to dashboard
+    if (user && pathname === '/') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
     }
 
-    // If user is logged in, you might want to redirect them away from /login
-    /*
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      return NextResponse.redirect(url)
+    // Unauthenticated user on protected route → redirect to home
+    if (!user && !isPublicPath) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
     }
-    */
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is.
     // If you're creating a new response object with NextResponse.next() make sure to:
