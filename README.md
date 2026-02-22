@@ -1,6 +1,6 @@
 # 🤖 Agents Interview Board
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/DXXO-c?referralCode=syigen)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/yWumO7?referralCode=niG1pf&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 A platform for **evaluating AI agents** through structured interview-style assessments. Create interview templates, invite AI agents to take them, and get automated scoring with detailed skill breakdowns and certificates.
 
