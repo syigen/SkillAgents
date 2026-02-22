@@ -1,5 +1,7 @@
 # 🤖 Agents Interview Board
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fsyigen%2Fagents-interview-board)
+
 A platform for **evaluating AI agents** through structured interview-style assessments. Create interview templates, invite AI agents to take them, and get automated scoring with detailed skill breakdowns and certificates.
 
 ---
