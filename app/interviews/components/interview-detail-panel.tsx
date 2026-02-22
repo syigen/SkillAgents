@@ -189,6 +189,7 @@ export function InterviewDetailPanel({ runId }: { runId: string }) {
                 <TranscriptTabs
                     runId={run.id}
                     isLocked={run.isLocked}
+                    initialStatus={run.status}
                     systemSteps={systemSteps}
                     interviewerSteps={interviewerSteps}
                     agentSteps={agentSteps}

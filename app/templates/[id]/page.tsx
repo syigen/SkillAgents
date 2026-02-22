@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
 import { notFound } from "next/navigation";
 import { AdminSidebar } from "../../components/admin-sidebar";
 import { ArrowLeft, Clock, BarChart, FileEdit } from "lucide-react";

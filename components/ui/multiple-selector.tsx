@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export interface MultipleSelectorProps
-    extends React.InputHTMLAttributes<HTMLInputElement> {
+    extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {
     value?: string[];
     onChange?: (value: string[]) => void;
     placeholder?: string;

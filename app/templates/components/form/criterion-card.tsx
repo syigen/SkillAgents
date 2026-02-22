@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TemplateFormValues } from "./template-form";
+import { TemplateFormValues } from "@/lib/validations/template";
 
 interface CriterionCardProps {
     index: number;

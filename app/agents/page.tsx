@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
 import { AdminSidebar } from "../components/admin-sidebar";
 import { AgentGrid } from "./components/agent-grid";
 

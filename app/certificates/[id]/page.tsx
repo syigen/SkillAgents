@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
 import { notFound } from "next/navigation";
 import { Award, CheckCircle, ShieldCheck, Calendar, Hash, FileJson } from "lucide-react";
 import { format } from "date-fns";
