@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Library, Users, BarChart3, Settings, LogOut, Bot, Activity } from "lucide-react";
+import { Library, BarChart3, Settings, LogOut, Bot, Activity } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,7 +11,7 @@ export function AdminSidebar() {
         if (path === '/templates' && pathname?.startsWith('/templates')) return true;
         if (path === '/agents' && pathname?.startsWith('/agents')) return true;
         if (path === '/interviews' && pathname?.startsWith('/interviews')) return true;
-        if (path === '/dashboard' && pathname === '/dashboard') return true;
+
         return pathname === path;
     };
 
@@ -20,29 +20,25 @@ export function AdminSidebar() {
             <div>
                 {/* Logo & Portal Name */}
                 <div className="flex items-center gap-3 px-6 mb-10">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                        <div className="w-4 h-4 bg-[#0f131d] rounded-full" />
-                    </div>
+                    <img src="/logo-white.svg" alt="SkillAgents" className="w-8 h-8" />
                     <div>
-                        <h1 className="text-white font-bold tracking-wide leading-tight">DevStudio</h1>
-                        <p className="text-[#94a3b8] text-xs">Admin Portal</p>
+                        <h1 className="text-white font-bold tracking-wide leading-tight">SkillAgents</h1>
+                        <p className="text-[#94a3b8] text-xs">Agent Evaluation</p>
                     </div>
                 </div>
 
                 {/* Main Navigation */}
                 <nav className="flex flex-col gap-1 px-3">
-                    <NavItem href="/dashboard" icon={<LayoutGrid size={18} />} label="Dashboard" active={isActive('/dashboard')} />
                     <NavItem href="/templates" icon={<Library size={18} />} label="Library" active={isActive('/templates')} />
                     <NavItem href="/agents" icon={<Bot size={18} />} label="Agents" active={isActive('/agents')} />
                     <NavItem href="/interviews" icon={<Activity size={18} />} label="Interviews" active={isActive('/interviews')} />
-                    <NavItem href="#" icon={<Users size={18} />} label="Team" />
                     <NavItem href="#" icon={<BarChart3 size={18} />} label="Reports" />
                 </nav>
             </div>
 
             {/* Bottom Navigation */}
             <div className="flex flex-col gap-1 px-3 mt-auto">
-                <NavItem href="#" icon={<Settings size={18} />} label="Settings" />
+                <NavItem href="/settings" icon={<Settings size={18} />} label="Settings" active={isActive('/settings')} />
                 <NavItem href="#" icon={<LogOut size={18} />} label="Logout" />
             </div>
         </div>
