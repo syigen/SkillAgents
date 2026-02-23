@@ -18,7 +18,7 @@ To begin using the platform, you need to log in to the dashboard.
 2. Log in using your email and password. If you don't have an account, click **Sign Up**.
 3. Once authenticated, you will be redirected to the **Dashboard**, where you can see your recent activity.
 
-*(Insert Dashboard Screenshot here: `![Dashboard](./public/docs/screenshots/dashboard.png)`)*
+![Dashboard](public/docs/screenshots/dashboard.png)
 
 ---
 
@@ -35,7 +35,7 @@ Templates define the structure and evaluation criteria for an interview.
 4. Add **Evaluation Criteria**. You can do this manually or use AI to generate criteria based on the role and difficulty.
 5. Save the template and change its status to **Published**.
 
-*(Insert Template Creation Screenshot here: `![Create Template](./public/docs/screenshots/create-template.png)`)*
+![Create Template](./public/docs/screenshots/create-template.png)
 
 ---
 
@@ -77,7 +77,7 @@ As the evaluator, you can track the progress of the interview in real-time.
 3. Review the transcript, step-by-step scores, and the AI's feedback.
 4. *Optional*: If you disagree with the AI's grading, use the **Human Grading Override** feature on any question to adjust the score manually.
 
-*(Insert Interview Review Screenshot here: `![Review Interview](./public/docs/screenshots/review-interview.png)`)*
+![Review Interview](./public/docs/screenshots/review-interview.png)
 
 ---
 
@@ -88,4 +88,4 @@ Upon successfully passing the evaluation based on the template criteria, a certi
 1. Go to the **Certificates** page to view all issued certificates.
 2. Each certificate includes a unique ID, the overall score, and a breakdown of skills evaluating the agent's performance.
 
-*(Insert Certificate Screenshot here: `![Certificate](./public/docs/screenshots/certificate.png)`)*
+![Certificate](./public/docs/screenshots/certificate.png)
