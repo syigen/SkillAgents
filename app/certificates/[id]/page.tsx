@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 import { notFound } from "next/navigation";
-import { Award, CheckCircle, ShieldCheck, Calendar, Hash, FileJson, Bot, Activity, Target } from "lucide-react";
+import { Award, CheckCircle, ShieldCheck, Calendar, Hash, FileJson, Bot, Activity, Target, User } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -191,15 +191,18 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
                     {evaluation?.per_question && evaluation.per_question.length > 0 && (
                         <div className="mt-12 text-left border-t border-[#2a364d] pt-8 max-w-3xl mx-auto">
                             <h3 className="text-sm font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center justify-between">
-                                <span>Interview Summary</span>
+                                <span>Detailed Transcript & Evaluation</span>
                                 <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{evaluation.per_question.length} Questions</span>
                             </h3>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {evaluation.per_question.map((q: any, i: number) => {
-                                    // Try to find the actual question text from the run steps if we included them
+                                    // Find correct candidate answer
                                     const questionStep = run?.steps.filter(s => s.role === 'interviewer')[i];
+                                    const agentSteps = run?.steps.filter(s => s.role === 'agent') || [];
+                                    const answerStep = agentSteps.find((s) => s.content.trim().startsWith(`[Question Index: ${i}]`)) || agentSteps[i];
                                     const questionText = questionStep?.content || `Question ${i + 1}`;
+                                    const answerText = answerStep ? answerStep.content.replace(/^\[Question Index: \d+\]\s*/i, '') : null;
 
                                     const isPass = parseFloat(q.score) >= (parseFloat(q.max_score) / 2); // basic heuristic
 
@@ -208,25 +211,36 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
                                             {/* Status indicator line */}
                                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${isPass ? 'bg-emerald-500/50' : 'bg-rose-500/50'}`} />
 
-                                            <div className="flex justify-between items-start gap-4 mb-3">
-                                                <div className="text-sm text-slate-200 font-medium leading-relaxed">
-                                                    <span className="text-slate-500 font-mono mr-2">{i + 1}.</span>
-                                                    {questionText}
+                                            <div className="flex justify-between items-start gap-4 mb-4">
+                                                <div className="text-sm text-slate-200 font-medium leading-relaxed flex items-start gap-3">
+                                                    <div className="bg-[#2a364d] text-slate-300 text-xs font-bold px-2 py-1 rounded">Q{i + 1}</div>
+                                                    <div className="mt-0.5">{questionText}</div>
                                                 </div>
-                                                <div className="shrink-0 text-center bg-[#151b27] px-3 py-1.5 rounded-lg border border-[#2a364d]">
-                                                    <div className={`text-lg font-black leading-none ${isPass ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                <div className="shrink-0 text-center bg-[#151b27] px-4 py-2 rounded-xl border border-[#2a364d] shadow-inner">
+                                                    <div className={`text-xl font-black leading-none ${isPass ? 'text-emerald-400' : 'text-rose-400'}`}>
                                                         {q.score}
                                                     </div>
-                                                    <div className="text-[9px] uppercase tracking-wider text-slate-500 mt-0.5 font-bold">
+                                                    <div className="text-[10px] uppercase tracking-widest text-slate-500 mt-1 font-bold">
                                                         / {q.max_score}
                                                     </div>
                                                 </div>
                                             </div>
 
+                                            {answerText && (
+                                                <div className="mt-4 mb-4 bg-slate-800/30 rounded-lg p-4 text-sm text-slate-300 border border-slate-700/30 border-l-2 border-l-slate-500">
+                                                    <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 flex items-center gap-1.5">
+                                                        <User size={12} /> Candidate Response
+                                                    </div>
+                                                    <div className="whitespace-pre-wrap leading-relaxed text-slate-300/90">{answerText}</div>
+                                                </div>
+                                            )}
+
                                             {q.feedback && (
-                                                <div className="mt-4 bg-[#151b27] rounded-lg p-3 text-sm text-slate-400 border border-[#1f2937]/50">
-                                                    <div className="text-[10px] uppercase tracking-wider text-indigo-400 font-bold mb-1">AI Assessor Feedback</div>
-                                                    {q.feedback}
+                                                <div className="mt-4 bg-[#151b27] rounded-lg p-4 text-sm text-slate-400 border border-[#1f2937]/50 border-l-2 border-l-indigo-500/50">
+                                                    <div className="text-[10px] uppercase tracking-widest text-indigo-400/80 font-bold mb-2 flex items-center gap-1.5">
+                                                        <Bot size={12} /> AI Assessor Feedback
+                                                    </div>
+                                                    <div className="whitespace-pre-wrap leading-relaxed text-slate-400/90">{q.feedback}</div>
                                                 </div>
                                             )}
 

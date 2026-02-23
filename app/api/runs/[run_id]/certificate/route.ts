@@ -16,6 +16,7 @@ export async function POST(
                 agent: true,
                 template: true,
                 certificate: true,
+                steps: { orderBy: { timestamp: 'asc' } },
                 evaluation: {
                     include: {
                         skillScores: true,
@@ -45,6 +46,8 @@ export async function POST(
             return NextResponse.json({ success: false, error: "Certificate already exists for this run" }, { status: 400 });
         }
 
+        const agentSteps = run.steps.filter((s: any) => s.role === 'agent');
+
         // Create snapshot
         const exportSnapshotJson = {
             run_id: run.id,
@@ -57,13 +60,16 @@ export async function POST(
                 pass_threshold: run.evaluation.passThreshold,
                 skill_threshold: run.evaluation.skillThreshold,
                 per_skill: Object.fromEntries(run.evaluation.skillScores.map((s: any) => [s.skill, s.score])),
-                per_question: run.evaluation.perQuestion.map((q: any) => ({
-                    question_index: q.questionIndex,
-                    score: q.score,
-                    max_score: q.maxScore,
-                    feedback: q.feedback,
-                    skills: Object.fromEntries(q.skillScores.map((s: any) => [s.skill, s.score])),
-                })),
+                per_question: run.evaluation.perQuestion.map((q: any) => {
+                    const step = agentSteps.find((s: any) => s.content.trim().startsWith(`[Question Index: ${q.questionIndex}]`)) || agentSteps[q.questionIndex];
+                    return {
+                        question_index: q.questionIndex,
+                        score: step?.score ?? q.score,
+                        max_score: q.maxScore,
+                        feedback: step?.humanNote || q.feedback,
+                        skills: Object.fromEntries(q.skillScores.map((s: any) => [s.skill, s.score])),
+                    };
+                }),
             } : null,
             timestamp: new Date().toISOString()
         };
