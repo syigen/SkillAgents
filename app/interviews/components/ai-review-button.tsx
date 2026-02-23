@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAiKey } from "@/lib/ai/use-ai-key";
+import { DEFAULT_MODEL } from "@/lib/ai/models";
 
 export function AiGradeButton({
     runId,
@@ -40,7 +41,7 @@ export function AiGradeButton({
                     runId,
                     stepId,
                     questionIndex,
-                    model: "gemini-2.0-flash",
+                    model: DEFAULT_MODEL,
                 }),
             });
 

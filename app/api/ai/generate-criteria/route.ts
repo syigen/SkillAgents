@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { generateTemplateCriteria } from "@/lib/ai/templates";
 import { resolveAiKey } from "@/lib/ai/resolve-key";
 import { z } from "zod";
+import { DEFAULT_MODEL } from "@/lib/ai/models";
 
 const requestSchema = z.object({
     name: z.string().min(1, "Template name is required"),
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const input = requestSchema.parse(body);
-        input.model = "gemini-3-flash-preview";
+        input.model = DEFAULT_MODEL;
         const criteria = await generateTemplateCriteria(input, apiKey, input.model);
         return NextResponse.json({ criteria }, { status: 200 });
     } catch (error: any) {

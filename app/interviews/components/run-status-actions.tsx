@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Activity, CircleDashed } from "lucide-react";
 import { FinishInterviewButton } from "./finish-interview-button";
+import { EvaluateAllButton } from "./evaluate-all-button";
 import { IssueCertificateButton } from "./issue-certificate-button";
 import { useAppSelector } from "@/lib/store/hooks";
 import { RunLiveTracker } from "@/lib/store/RunLiveTracker";
@@ -32,12 +33,18 @@ export function RunStatusActions({
                 {status}
             </div>
             {(status === 'running' || status === 'in_progress') && !locked && (
-                <FinishInterviewButton
-                    runId={runId}
-                    steps={steps}
-                    criteria={criteria}
-                    skills={skills}
-                />
+                <>
+                    <EvaluateAllButton
+                        runId={runId}
+                        steps={steps}
+                    />
+                    <FinishInterviewButton
+                        runId={runId}
+                        steps={steps}
+                        criteria={criteria}
+                        skills={skills}
+                    />
+                </>
             )}
             <IssueCertificateButton runId={runId} isLocked={hasCertificate} status={status} />
         </div>

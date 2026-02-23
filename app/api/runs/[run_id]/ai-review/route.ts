@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { resolveAiKey } from "@/lib/ai/resolve-key";
 import { generateQuestionGrade } from "@/lib/ai/review";
+import { DEFAULT_MODEL } from "@/lib/ai/models";
 
 export async function POST(
     req: Request,
@@ -19,7 +20,7 @@ export async function POST(
         const { run_id } = await params;
         const body = await req.json();
         const { stepId, questionIndex, model: requestModel } = body;
-        const model = requestModel || "gemini-2.0-flash";
+        const model = requestModel || DEFAULT_MODEL;
 
         if (!stepId) {
             return NextResponse.json({ error: "stepId is required" }, { status: 400 });

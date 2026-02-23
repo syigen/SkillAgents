@@ -6,7 +6,6 @@ import { CheckCircle2, Loader2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { updateRunStatus } from "@/lib/store/runsSlice";
-
 import {
     AlertDialog,
     AlertDialogAction,
@@ -58,47 +57,8 @@ export function FinishInterviewButton({
         setError(null);
 
         try {
-            // 1. Separate agent steps to get their scores
-            const agentSteps = steps.filter(s => s.role === 'agent');
-
-            if (agentSteps.length === 0) {
-                throw new Error("Cannot evaluate an interview with no agent responses.");
-            }
-
-            // 2. Prepare evaluation payload
-            const perQuestion = agentSteps.map((step, idx) => ({
-                question_index: idx,
-                score: step.score ?? 0,
-                max_score: 100,
-                feedback: step.humanNote ?? ""
-            }));
-
-            const overall = Math.round(
-                perQuestion.reduce((sum, q) => sum + q.score, 0) / perQuestion.length
-            );
-
-            // Populate per_skill scores
-            // For now, we apply the overall score to all template skills
-            const perSkill: Record<string, number> = {};
-            skills.forEach(skill => {
-                const skillName = typeof skill === 'string' ? skill : skill.name;
-                if (skillName) {
-                    perSkill[skillName] = overall;
-                }
-            });
-
-            const payload = {
-                overall,
-                pass_threshold: 70, // Default pass threshold
-                per_skill: perSkill,
-                skill_threshold: 70,
-                per_question: perQuestion
-            };
-
-            const res = await fetch(`/api/runs/${runId}/evaluate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+            const res = await fetch(`/api/runs/${runId}/finish`, {
+                method: "POST"
             });
 
             if (!res.ok) {
@@ -136,14 +96,14 @@ export function FinishInterviewButton({
                         className="border-indigo-500/30 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/10 font-semibold flex items-center gap-2"
                     >
                         {loading ? <Loader2 className="animate-spin" size={16} /> : <Flag size={16} />}
-                        Finish & Evaluate
+                        Finish Interview
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-[#0f131d] border-[#1f2937] text-white">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Finish and evaluate interview?</AlertDialogTitle>
+                        <AlertDialogTitle>Finish interview?</AlertDialogTitle>
                         <AlertDialogDescription className="text-slate-400 text-sm">
-                            This will calculate the final aggregate score across all questions and lock the transcript.
+                            This will calculate the final status based on the current score and lock the transcript.
                             If the candidate passes, you'll be able to issue a digital certificate.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -155,7 +115,7 @@ export function FinishInterviewButton({
                             onClick={handleFinish}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white border-0"
                         >
-                            Yes, Finish Evaluation
+                            Yes, Finish Interview
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

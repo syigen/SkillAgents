@@ -145,3 +145,77 @@ export function buildQuestionReviewPrompt(input: QuestionReviewInput): string {
     return parts.join("\n");
 }
 
+export interface FullEvaluationInput {
+    templateName: string;
+    templateDescription?: string;
+    skills: string[];
+    difficulty?: string;
+    transcript: Array<{ role: string; content: string }>;
+}
+
+/**
+ * Builds the prompt for AI-powered full interview evaluation.
+ * Gemini must return a JSON object with overall score, pass/fail threshold recommendations, and per-skill scores.
+ */
+export function buildFullEvaluationPrompt(input: FullEvaluationInput): string {
+    const { templateName, templateDescription, skills, difficulty, transcript } = input;
+
+    const parts: string[] = [
+        `You are an expert technical interviewer conducting a final evaluation of a candidate's interview.`,
+        `Your job is to read the entire interview transcript and evaluate the candidate across the required skills.`,
+        ``,
+        `## Interview Context`,
+        `Template: "${templateName}"`,
+    ];
+
+    if (templateDescription) parts.push(`Description: ${templateDescription}`);
+    if (skills.length > 0) parts.push(`Skills assessed: ${skills.join(", ")}`);
+    if (difficulty) parts.push(`Difficulty: ${difficulty}`);
+
+    parts.push(
+        ``,
+        `## Interview Transcript`,
+    );
+
+    for (let i = 0; i < transcript.length; i++) {
+        const msg = transcript[i];
+        const roleName = msg.role === 'interviewer' ? 'Interviewer' : (msg.role === 'agent' ? 'Candidate' : 'System');
+        if (msg.role !== 'system') {
+            parts.push(`**${roleName}:** ${msg.content}\n`);
+        }
+    }
+
+    parts.push(
+        ``,
+        `## Instructions`,
+        `Based on the ENTIRE transcript, evaluate the candidate's overall performance and their proficiency in EACH specific skill listed.`,
+        ``,
+        `Return ONLY a valid JSON object. No markdown, no explanation, no code fences:`,
+        `{`,
+        `  "overall": 85,`,
+        `  "pass_threshold": 70,`,
+        `  "skill_threshold": 60,`,
+        `  "per_skill": {`
+    );
+
+    if (skills.length > 0) {
+        skills.forEach((s, idx) => {
+            parts.push(`    "${s}": 85${idx < skills.length - 1 ? ',' : ''}`);
+        });
+    } else {
+        parts.push(`    "general": 85`);
+    }
+
+    parts.push(
+        `  }`,
+        `}`,
+        ``,
+        `Rules:`,
+        `- "overall" must be 0-100. Be fair but rigorous. A perfect interview gets 90-100, good 70-89, partial 40-69, poor 0-39.`,
+        `- "pass_threshold" should be your recommendation for passing the interview, typically 65-75.`,
+        `- "skill_threshold" should be the minimum score required in any single skill to not fail automatically, typically 50-60.`,
+        `- "per_skill" MUST include exactly the skills requested. Score each 0-100.`
+    );
+
+    return parts.join("\n");
+}
