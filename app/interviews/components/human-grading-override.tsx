@@ -193,7 +193,7 @@ export function HumanGradingOverride({
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="h-7 text-[10px] px-2.5 bg-transparent border-[#2a364d] text-slate-400 hover:text-white hover:bg-[#2a364d]"
+                                        className="h-7 text-[10px] px-2.5 bg-transparent border-[#2a364d] text-slate-400 hover:text-white hover:bg-[#2a364d] dark:hover:bg-[#2a364d] dark:hover:text-white"
                                         onClick={() => handleElectGrade(item.id)}
                                         disabled={loading}
                                     >

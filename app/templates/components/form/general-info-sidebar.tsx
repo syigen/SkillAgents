@@ -226,7 +226,7 @@ export function GeneralInfoSidebar({ isEditing }: { isEditing?: boolean }) {
             <div className="mt-8 pt-6 border-t border-[#1f2937] flex flex-col gap-3">
                 <p className="text-xs text-slate-500 mb-1">Last saved: Just now</p>
                 <div className="flex gap-3">
-                    <Button type="button" variant="outline" className="flex-1 bg-transparent border-[#2a364d] text-slate-300 hover:bg-slate-800 hover:text-white rounded-md">
+                    <Button type="button" variant="outline" className="flex-1 bg-transparent border-[#2a364d] text-slate-300 hover:bg-slate-800 hover:text-white dark:hover:bg-slate-800 dark:hover:text-white rounded-md">
                         Cancel
                     </Button>
                     <Button

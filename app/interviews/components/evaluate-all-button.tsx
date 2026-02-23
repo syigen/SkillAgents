@@ -155,7 +155,7 @@ export function EvaluateAllButton({
                 onClick={handleEvaluateAll}
                 disabled={loading}
                 variant="outline"
-                className="border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 font-semibold flex items-center gap-2"
+                className="border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 dark:hover:bg-violet-500/10 dark:hover:text-violet-300 font-semibold flex items-center gap-2"
             >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
                 Evaluate All
@@ -184,7 +184,7 @@ export function EvaluateAllButton({
                     <AlertDialogFooter className="sm:justify-center">
                         <Button
                             variant="destructive"
-                            className="bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-400 w-full flex items-center gap-2"
+                            className="bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-400 dark:bg-red-500/20 dark:hover:bg-red-500/30 dark:hover:text-red-400 w-full flex items-center gap-2"
                             onClick={handleAbort}
                         >
                             <XCircle size={16} /> Stop Evaluation

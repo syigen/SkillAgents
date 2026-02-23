@@ -93,7 +93,7 @@ export function FinishInterviewButton({
                     <Button
                         disabled={loading}
                         variant="outline"
-                        className="border-indigo-500/30 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/10 font-semibold flex items-center gap-2"
+                        className="border-indigo-500/30 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300 font-semibold flex items-center gap-2"
                     >
                         {loading ? <Loader2 className="animate-spin" size={16} /> : <Flag size={16} />}
                         Finish Interview

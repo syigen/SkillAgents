@@ -69,7 +69,7 @@ export function AiGradeButton({
                 disabled={loading}
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 font-semibold text-xs flex items-center gap-1.5"
+                className="h-8 px-3 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 dark:hover:bg-violet-500/10 dark:hover:text-violet-300 font-semibold text-xs flex items-center gap-1.5"
             >
                 {loading ? (
                     <Loader2 className="animate-spin" size={13} />

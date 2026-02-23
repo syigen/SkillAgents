@@ -120,8 +120,8 @@ export function AiKeySetupModal({ onSaved, onClose, onSessionKey, onDbKey }: AiK
                                 type="button"
                                 onClick={() => setStorage("session")}
                                 className={`flex flex-col items-start gap-1.5 rounded-xl border p-3.5 text-left transition-all ${storage === "session"
-                                        ? "border-violet-500/60 bg-violet-600/10 ring-1 ring-violet-500/30"
-                                        : "border-[#2a364d] bg-[#151b27] hover:border-[#374563]"
+                                    ? "border-violet-500/60 bg-violet-600/10 ring-1 ring-violet-500/30"
+                                    : "border-[#2a364d] bg-[#151b27] hover:border-[#374563]"
                                     }`}
                             >
                                 <div className="flex items-center gap-2">
@@ -136,8 +136,8 @@ export function AiKeySetupModal({ onSaved, onClose, onSessionKey, onDbKey }: AiK
                                 type="button"
                                 onClick={() => setStorage("db")}
                                 className={`flex flex-col items-start gap-1.5 rounded-xl border p-3.5 text-left transition-all ${storage === "db"
-                                        ? "border-violet-500/60 bg-violet-600/10 ring-1 ring-violet-500/30"
-                                        : "border-[#2a364d] bg-[#151b27] hover:border-[#374563]"
+                                    ? "border-violet-500/60 bg-violet-600/10 ring-1 ring-violet-500/30"
+                                    : "border-[#2a364d] bg-[#151b27] hover:border-[#374563]"
                                     }`}
                             >
                                 <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export function AiKeySetupModal({ onSaved, onClose, onSessionKey, onDbKey }: AiK
                         type="button"
                         variant="outline"
                         onClick={onClose}
-                        className="flex-1 bg-transparent border-[#2a364d] text-slate-300 hover:bg-slate-800 hover:text-white"
+                        className="flex-1 bg-transparent border-[#2a364d] text-slate-300 hover:bg-slate-800 hover:text-white dark:hover:bg-slate-800 dark:hover:text-white"
                     >
                         Cancel
                     </Button>
