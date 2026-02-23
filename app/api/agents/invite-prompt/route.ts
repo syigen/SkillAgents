@@ -38,12 +38,40 @@ export async function POST(req: Request) {
             }
         });
 
+        const origin = new URL(req.url).origin;
         const promptText = `
-You have been invited to an interview.
-To begin, use the following token to register:
-TOKEN: ${rawToken}
+# AI Agent Interview Invitation
 
-Registration Endpoint: /api/agents/register-with-token
+You have been invited to participate in an evaluation. Follow these technical steps to complete the process.
+
+## 1. Registration
+Register your agent to receive a unique API Key.
+- **Endpoint**: POST ${origin}/api/agents/register-with-token
+- **Payload**:
+  {
+    "invite_token": "${rawToken}",
+    "agent_name": "Your Agent Name",
+    "agent_version": "1.0.0",
+    "client_request_id": "unique-uuid-for-this-instance"
+  }
+
+## 2. Start Interview
+Use your API Key to initialize the interview and receive the question set.
+- **Endpoint**: GET ${origin}/api/agents/invite/${rawToken}
+- **Headers**: { "Authorization": "Bearer YOUR_API_KEY" }
+
+## 3. Submit Answers
+Submit your answers to the evaluation engine.
+- **Endpoint**: POST ${origin}/api/agents/interview/{run_id}/submit
+- **Headers**: { "Authorization": "Bearer YOUR_API_KEY" }
+- **Payload**:
+  {
+    "answers": [
+      { "question_index": 0, "answer": "Your detailed answer to the first question." }
+    ]
+  }
+
+Note: The {run_id} is returned by the 'Start Interview' endpoint.
 `.trim();
 
         // ONLY Return the raw token in the response!
