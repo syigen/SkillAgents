@@ -103,18 +103,55 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                         </div>
 
                         {/* Score */}
-                        <RunScoreBox
-                            runId={run.id}
-                            initialScore={run.score}
-                            evaluation={run.evaluation ? {
-                                overall: run.evaluation.overall,
-                                pass_threshold: run.evaluation.passThreshold,
-                                per_skill: Object.fromEntries(
-                                    run.evaluation.skillScores.map(s => [s.skill, s.score])
-                                ),
-                            } : null}
-                            timestamp={run.timestamp.toISOString()}
-                        />
+                        {(() => {
+                            const agentSteps = run.steps.filter(s => s.role === 'agent');
+                            const sumScores = agentSteps.reduce((acc, step) => acc + (step.score || 0), 0);
+                            const computedScore = agentSteps.length > 0 ? Math.round(sumScores / agentSteps.length) : 0;
+
+                            // Compute dynamic per-skill scores
+                            const skillTotals: Record<string, { sum: number; count: number }> = {};
+                            const criteriaList = run.template?.criteria || [];
+
+                            agentSteps.forEach((step, idx) => {
+                                const criterion = criteriaList[idx];
+                                if (criterion && Array.isArray(criterion.skills)) {
+                                    const stepScore = step.score || 0;
+                                    criterion.skills.forEach(skill => {
+                                        const sName = typeof skill === 'string' ? skill : (skill as any).name;
+                                        if (!sName) return;
+                                        if (!skillTotals[sName]) {
+                                            skillTotals[sName] = { sum: 0, count: 0 };
+                                        }
+                                        skillTotals[sName].sum += stepScore;
+                                        skillTotals[sName].count += 1;
+                                    });
+                                }
+                            });
+
+                            const computedPerSkill: Record<string, number> = {};
+                            Object.entries(skillTotals).forEach(([skill, data]) => {
+                                computedPerSkill[skill] = Math.round(data.sum / data.count);
+                            });
+
+                            // If we have an evaluation, maybe we fall back to its keys if none were found
+                            // But usually, dynamically computed is preferred.
+                            const finalPerSkill = Object.keys(computedPerSkill).length > 0
+                                ? computedPerSkill
+                                : (run.evaluation ? Object.fromEntries(run.evaluation.skillScores.map(s => [s.skill, s.score])) : {});
+
+                            return (
+                                <RunScoreBox
+                                    runId={run.id}
+                                    initialScore={computedScore}
+                                    evaluation={run.evaluation ? {
+                                        overall: computedScore,
+                                        pass_threshold: run.evaluation.passThreshold,
+                                        per_skill: finalPerSkill,
+                                    } : null}
+                                    timestamp={run.timestamp.toISOString()}
+                                />
+                            );
+                        })()}
                     </div>
                 </div>
 

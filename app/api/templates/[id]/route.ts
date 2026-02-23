@@ -53,6 +53,7 @@ export async function PUT(
                             prompt: c.prompt,
                             expected: c.expected,
                             minScore: c.minScore,
+                            skills: c.skills || [],
                         })) || [],
                     },
                 },

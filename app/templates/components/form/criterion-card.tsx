@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MultipleSelector } from "@/components/ui/multiple-selector";
 import { TemplateFormValues } from "@/lib/validations/template";
 
 interface CriterionCardProps {
@@ -81,7 +82,7 @@ export function CriterionCard({ index, onDelete, onDuplicate }: CriterionCardPro
                             control={control}
                             name={`criteria.${index}.minScore`}
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="mb-6">
                                     <div className="mb-2">
                                         <FormLabel className="text-xs font-semibold tracking-widest text-[#94a3b8] uppercase">
                                             Max Score
@@ -102,6 +103,29 @@ export function CriterionCard({ index, onDelete, onDuplicate }: CriterionCardPro
                                             pts
                                         </span>
                                     </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={control}
+                            name={`criteria.${index}.skills`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <div className="mb-2">
+                                        <FormLabel className="text-xs font-semibold tracking-widest text-[#94a3b8] uppercase">
+                                            Skill Tags
+                                        </FormLabel>
+                                    </div>
+                                    <FormControl>
+                                        <MultipleSelector
+                                            value={field.value || []}
+                                            onChange={field.onChange}
+                                            placeholder="Tag..."
+                                            className="bg-[#1b253c]/50 border-[#2a364d] focus-within:ring-blue-500 rounded-md shadow-sm"
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}

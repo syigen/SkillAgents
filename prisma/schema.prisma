@@ -66,6 +66,7 @@ model TemplateCriterion {
   prompt     String
   expected   String
   minScore   Int      @map("min_score")
+  skills     Json     @default("[]")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)

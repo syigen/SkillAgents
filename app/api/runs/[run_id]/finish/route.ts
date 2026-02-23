@@ -11,7 +11,12 @@ export async function POST(
         // Fetch run to get the current score and evaluation
         const run = await prisma.run.findUnique({
             where: { id: run_id },
-            include: { evaluation: true }
+            include: {
+                evaluation: true,
+                steps: {
+                    where: { role: 'agent' }
+                }
+            }
         });
 
         if (!run) {
@@ -22,14 +27,16 @@ export async function POST(
             return NextResponse.json({ success: false, error: "Run is already finished/locked" }, { status: 400 });
         }
 
-        // Determine runPass depending on whether we have a full evaluation threshold
-        let runPass = false;
+        // Determine runPass based on dynamically computed score
+        const agentSteps = run.steps;
+        const sumScores = agentSteps.reduce((acc, step) => acc + (step.score || 0), 0);
+        const computedScore = agentSteps.length > 0 ? Math.round(sumScores / agentSteps.length) : (run.score ?? 0);
 
+        let runPass = false;
         if (run.evaluation) {
-            runPass = run.evaluation.overall >= run.evaluation.passThreshold;
-        } else if (run.score !== null) {
-            // Fallback if no full evaluation was run
-            runPass = run.score >= 70;
+            runPass = computedScore >= run.evaluation.passThreshold;
+        } else {
+            runPass = computedScore >= 70;
         }
 
         const newStatus = runPass ? 'pass' : 'fail';
@@ -39,6 +46,7 @@ export async function POST(
             where: { id: run_id },
             data: {
                 status: newStatus,
+                score: computedScore,
                 isLocked: true,
             }
         });

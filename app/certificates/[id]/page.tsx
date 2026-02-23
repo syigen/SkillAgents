@@ -24,7 +24,29 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
 
     const snapshotData = cert.snapshot as any;
     const evaluation = snapshotData?.evaluation;
-    const skills = evaluation?.per_skill ? Object.entries(evaluation.per_skill) : [];
+
+    // Dynamically calculate skills based on per-question snapshot data
+    const skillTotals: Record<string, { sum: number, count: number }> = {};
+    if (evaluation?.per_question) {
+        evaluation.per_question.forEach((q: any) => {
+            if (q.skills) {
+                Object.entries(q.skills).forEach(([skill, score]) => {
+                    const sName = String(skill);
+                    if (!skillTotals[sName]) {
+                        skillTotals[sName] = { sum: 0, count: 0 };
+                    }
+                    skillTotals[sName].sum += Number(score);
+                    skillTotals[sName].count += 1;
+                });
+            }
+        });
+    }
+
+    // Default to the old global per_skill if no question level skills are tracked
+    let skills = Object.entries(skillTotals).map(([skill, data]) => [skill, Math.round(data.sum / data.count)]);
+    if (skills.length === 0 && evaluation?.per_skill) {
+        skills = Object.entries(evaluation.per_skill);
+    }
 
     return (
         <div className="min-h-screen bg-[#0f131d] flex flex-col items-center justify-center p-6 font-sans">
@@ -86,8 +108,8 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
                                 {skills.map(([skill, score]) => (
                                     <div key={skill} className="bg-[#0f131d] border border-[#2a364d] rounded-xl p-3 text-center transition-transform hover:-translate-y-1">
                                         <div className="text-xl font-black text-indigo-400 mb-1">{String(score)}</div>
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate" title={skill}>
-                                            {skill}
+                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate" title={String(skill)}>
+                                            {String(skill)}
                                         </div>
                                     </div>
                                 ))}

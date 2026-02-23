@@ -31,6 +31,7 @@ export async function POST(req: Request) {
                         prompt: c.prompt,
                         expected: c.expected,
                         minScore: c.minScore,
+                        skills: c.skills || [],
                     })),
                 },
             },

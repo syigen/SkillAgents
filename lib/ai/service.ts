@@ -28,6 +28,7 @@ export interface CriterionItem {
     prompt: string;
     expected: string;
     minScore: number;
+    skills?: string[];
 }
 
 export class AiService {
@@ -135,6 +136,7 @@ export class AiService {
             prompt: String(item.prompt ?? ""),
             expected: String(item.expected ?? ""),
             minScore: Math.max(0, Math.round(Number(item.minScore) || 10)),
+            skills: Array.isArray(item.skills) ? item.skills.map(String) : [],
         }));
     }
 
