@@ -13,6 +13,7 @@ type RunSummary = {
     score: number | null;
     timestamp: Date | string;
     isLocked: boolean;
+    hasCertificate?: boolean;
     agent: { name: string; agentId: string } | null;
     template: { name: string } | null;
 };
@@ -116,7 +117,7 @@ export function InterviewTable({ runs }: Props) {
                                                             : <CircleDashed size={10} className="animate-pulse" />}
                                                     {run.status}
                                                 </span>
-                                                {run.isLocked && (
+                                                {run.hasCertificate && (
                                                     <Lock size={11} className="text-amber-500/50" />
                                                 )}
                                             </div>

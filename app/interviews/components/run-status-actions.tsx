@@ -10,6 +10,7 @@ export function RunStatusActions({
     runId,
     initialStatus,
     isLocked,
+    hasCertificate,
     steps,
     criteria,
     skills,
@@ -38,7 +39,7 @@ export function RunStatusActions({
                     skills={skills}
                 />
             )}
-            <IssueCertificateButton runId={runId} isLocked={locked} status={status} />
+            <IssueCertificateButton runId={runId} isLocked={hasCertificate} status={status} />
         </div>
     );
 }

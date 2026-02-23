@@ -1,6 +1,6 @@
 "use client";
 
-import { Library, BarChart3, Settings, LogOut, Bot, Activity } from "lucide-react";
+import { Library, BarChart3, Settings, LogOut, Bot, Activity, Award } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ export function AdminSidebar() {
         if (path === '/templates' && pathname?.startsWith('/templates')) return true;
         if (path === '/agents' && pathname?.startsWith('/agents')) return true;
         if (path === '/interviews' && pathname?.startsWith('/interviews')) return true;
+        if (path === '/certificates' && pathname?.startsWith('/certificates')) return true;
 
         return pathname === path;
     };
@@ -32,6 +33,7 @@ export function AdminSidebar() {
                     <NavItem href="/templates" icon={<Library size={18} />} label="Library" active={isActive('/templates')} />
                     <NavItem href="/agents" icon={<Bot size={18} />} label="Agents" active={isActive('/agents')} />
                     <NavItem href="/interviews" icon={<Activity size={18} />} label="Interviews" active={isActive('/interviews')} />
+                    <NavItem href="/certificates" icon={<Award size={18} />} label="Certificates" active={isActive('/certificates')} />
                     <NavItem href="#" icon={<BarChart3 size={18} />} label="Reports" />
                 </nav>
             </div>

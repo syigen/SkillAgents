@@ -30,6 +30,7 @@ type RunDetail = {
     templateName: string | null;
     steps: StepData[];
     criteria: { prompt: string; expected: string; minScore: number }[];
+    certificate: { id: string } | null;
 };
 
 function getScoreColor(score: number | null, passThreshold?: number) {
@@ -101,7 +102,7 @@ export function InterviewDetailPanel({ runId }: { runId: string }) {
                         <span>{format(new Date(run.timestamp), 'yyyy-MM-dd HH:mm')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        {run.isLocked && (
+                        {run.certificate && (
                             <div className="flex items-center gap-1 text-[10px] text-amber-500/70 border border-amber-500/20 bg-amber-500/5 rounded-full px-2 py-0.5">
                                 <Lock size={9} /> Certified
                             </div>
@@ -126,7 +127,7 @@ export function InterviewDetailPanel({ runId }: { runId: string }) {
                                 onSuccess={fetchRun}
                             />
                         )}
-                        <IssueCertificateButton runId={run.id} isLocked={run.isLocked} status={run.status} />
+                        <IssueCertificateButton runId={run.id} isLocked={!!run.certificate} status={run.status} />
                     </div>
                 </div>
 

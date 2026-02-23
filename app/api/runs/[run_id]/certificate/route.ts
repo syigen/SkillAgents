@@ -35,10 +35,6 @@ export async function POST(
             return NextResponse.json({ success: false, error: "Certificate already exists for this run" }, { status: 400 });
         }
 
-        if (run.isLocked) {
-            return NextResponse.json({ success: false, error: "Run is already locked" }, { status: 400 });
-        }
-
         // Create snapshot
         const exportSnapshotJson = {
             run_id: run.id,

@@ -21,7 +21,8 @@ export async function GET(
                 },
                 steps: {
                     orderBy: { timestamp: 'asc' }
-                }
+                },
+                certificate: true
             }
         });
 

@@ -36,7 +36,8 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                     skillScores: true,
                     perQuestion: { include: { skillScores: true } }
                 }
-            }
+            },
+            certificate: true
         },
     });
 
@@ -63,6 +64,7 @@ export default async function InterviewDetailsPage({ params }: { params: Promise
                             runId={run.id}
                             initialStatus={run.status}
                             isLocked={run.isLocked}
+                            hasCertificate={!!run.certificate}
                             steps={run.steps.map(s => ({
                                 ...s,
                                 timestamp: s.timestamp.toISOString(),

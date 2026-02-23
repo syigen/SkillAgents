@@ -8,7 +8,7 @@ import { InterviewTable } from "./components/interview-table";
 export default async function InterviewsPage() {
     const runs = await prisma.run.findMany({
         orderBy: { timestamp: "desc" },
-        include: { agent: true, template: true },
+        include: { agent: true, template: true, certificate: true },
     });
 
     return (
@@ -31,6 +31,7 @@ export default async function InterviewsPage() {
                         runs={runs.map(r => ({
                             ...r,
                             timestamp: r.timestamp,
+                            hasCertificate: !!r.certificate
                         }))}
                     />
                 </div>
