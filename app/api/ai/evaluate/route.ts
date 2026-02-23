@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { resolveAiKey } from "@/lib/ai/resolve-key";
-import { generateQuestionGrade } from "@/lib/ai/review";
+import { AiService } from "@/lib/ai/service";
 import { DEFAULT_MODEL } from "@/lib/ai/models";
 
 export async function POST(req: Request) {
@@ -57,20 +57,17 @@ export async function POST(req: Request) {
         const criterion = run.template.criteria[qIdx];
 
         // Call Gemini for single-question grading
-        const grade = await generateQuestionGrade(
-            {
-                templateName: run.template.name,
-                templateDescription: run.template.description ?? undefined,
-                skills: templateSkills,
-                difficulty: run.template.difficulty,
-                questionIndex: qIdx,
-                prompt: question?.content ?? "",
-                expected: criterion?.expected ?? undefined,
-                agentAnswer: answer.content.replace(/^\[Question Index: \d+\]\s*/i, ''),
-            },
-            apiKey,
-            model
-        );
+        const aiService = new AiService(apiKey, model);
+        const grade = await aiService.generateQuestionGrade({
+            templateName: run.template.name,
+            templateDescription: run.template.description ?? undefined,
+            skills: templateSkills,
+            difficulty: run.template.difficulty,
+            questionIndex: qIdx,
+            prompt: question?.content ?? "",
+            expected: criterion?.expected ?? undefined,
+            agentAnswer: answer.content.replace(/^\[Question Index: \d+\]\s*/i, ''),
+        });
 
         // Save the grade via the existing grading mechanism
         const now = new Date();

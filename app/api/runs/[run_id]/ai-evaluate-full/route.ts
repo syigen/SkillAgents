@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { resolveAiKey } from "@/lib/ai/resolve-key";
-import { generateFullEvaluation } from "@/lib/ai/review";
+import { AiService } from "@/lib/ai/service";
 import { DEFAULT_MODEL } from "@/lib/ai/models";
 
 export async function POST(
@@ -52,17 +52,14 @@ export async function POST(
         }
 
         // 2. Call Gemini for full evaluation
-        const aiEvaluation = await generateFullEvaluation(
-            {
-                templateName: run.template.name,
-                templateDescription: run.template.description ?? undefined,
-                skills: templateSkills,
-                difficulty: run.template.difficulty,
-                transcript: transcript
-            },
-            apiKey,
-            model
-        );
+        const aiService = new AiService(apiKey, model);
+        const aiEvaluation = await aiService.generateFullEvaluation({
+            templateName: run.template.name,
+            templateDescription: run.template.description ?? undefined,
+            skills: templateSkills,
+            difficulty: run.template.difficulty,
+            transcript: transcript
+        });
 
         // 3. Gather per-question scores (from existing steps)
         const agentSteps = run.steps.filter(s => s.role === 'agent');

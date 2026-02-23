@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateTemplateDescription } from "@/lib/ai/templates";
+import { AiService } from "@/lib/ai/service";
 import { resolveAiKey } from "@/lib/ai/resolve-key";
 import { z } from "zod";
 import { DEFAULT_MODEL } from "@/lib/ai/models";
@@ -25,7 +25,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const input = requestSchema.parse(body);
         input.model = DEFAULT_MODEL;
-        const description = await generateTemplateDescription(input, apiKey, input.model);
+        const aiService = new AiService(apiKey, input.model);
+        const description = await aiService.generateTemplateDescription(input);
         return NextResponse.json({ description }, { status: 200 });
     } catch (error: any) {
         if (error.name === "ZodError") {
